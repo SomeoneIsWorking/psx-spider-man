@@ -217,6 +217,6 @@ if(BUILD_TESTING)
     COMMAND ${Python3_EXECUTABLE} ${PSXPORT_DIR}/tools/check_cpp_style.py
             --root ${CMAKE_SOURCE_DIR} --compile-commands ${CMAKE_BINARY_DIR}
             # Shrink-only caps; lower them whenever the file shrinks.
-            --cap titles/spiderman1/spider1_frame_driver.cpp=441
+            --cap titles/spiderman1/spider1_frame_driver.cpp=440
             --cap titles/spiderman1/spider1_mode_driver.cpp=521)
 endif()

@@ -1,5 +1,4 @@
 #include "spider_port.h"
-#include "cfg.h"
 #include "dbg_server.h"
 #include "field_turn.h"
 #include "hw_bind.h"
@@ -83,13 +82,12 @@ int runPort(SpiderRuntime &runtime, int argc, char **argv) {
   GuestExecution execution(*core);
 
   // This spine skips native_boot's loop, so the debug endpoint and store observation attach here.
-  const int frameCap = game->dbg_server.attach(core, cfg_int("PSXPORT_NATIVE_FRAMES", 0));
+  game->dbg_server.start(core);
   store_observe_attach(*core);
   lucent::info("boot",
-               "{} boot spine owns its frame loop: live endpoint {} (frame cap {})",
+               "{} boot spine owns its frame loop: live endpoint {}",
                runtime.serial(),
-               frameCap > 0 ? std::to_string(frameCap) : "uncapped",
-               frameCap);
+               debug_server_live() ? "attached" : "not requested");
 
   const psx::frame::FieldTurn fieldTurn;
   auto result = execution.enter(program->crt0Entry);

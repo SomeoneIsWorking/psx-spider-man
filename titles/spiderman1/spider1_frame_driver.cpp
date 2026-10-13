@@ -223,7 +223,6 @@ void Spider1FrameDriver::captureVsyncCallback(Core *core) {
 void Spider1FrameDriver::deliverField(Core &core) {
   core.mem_w32(libetcVblankCountAddress, core.mem_r32(libetcVblankCountAddress) + 1u);
   ++fieldsSinceCommit_;
-  game_.run.fieldDelivered();
   game_.spu_audio.frame();
   if (vsyncCallback_) {
     const R3000 saved = static_cast<const R3000 &>(core);
