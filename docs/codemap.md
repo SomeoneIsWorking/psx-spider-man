@@ -127,7 +127,7 @@ Hermetic contract and ownership tests: `spider1_mode_rules`, `spider1_mode_trans
 | Hop | Owner | What it decides |
 | --- | --- | --- |
 | One field, services around the body | `psx::FieldTurn::beginField` / `endField` (`runtime/psx/frame/field_turn.*`) | pause answer, watchdog re-arm, RAM-dump frame, one queued command. The BODY is the title's. |
-| The body | `Spider1FrameDriver::stepFrame` → `Spider1BootstrapTurn::step` | services the boundary the guest stopped at (one field, one fence, `Game::run.fieldDelivered()`), then resumes the guest; a non-boundary stop logs the exit, commits an unpresented fence and calls `Game::run.requestEnd()` |
+| The body | `Spider1FrameDriver::stepFrame` → `Spider1BootstrapTurn::step` | services the boundary the guest stopped at (one field, one fence), then resumes the guest; a non-boundary stop logs the exit, commits an unpresented fence and calls `Game::run.requestEnd()` |
 | A retail mode step (not reached by the product) | `Spider1ModeDriver::step` → `Spider1MenuMode` / `Spider1AlternateMode` / `Spider1InvalidSelectorInput` / `Spider1TransitionWipe` | the guest calls of that mode, ending in one of `modeWaitUnadvancedField` / `modeDrainDrawFields` / `modeCompleteFrameHandshake` |
 | Presenting a step (mode path, not reached) | `Spider1FrameDriver::commitSubmittedFrame` / `commitRepeatedFieldFrame` / `commitUnpresentedFrame` | submitted, repeated-field or unpresented, all through `claimFrameFence` — one fence per host step, a second is an abort |
 | A fiber blocked at a field boundary (not reached) | `Spider1HostSteppedFiber::yieldField` / `resume` / `clearFieldWait` | what the next host step does about it; `planFiberResume` / `planFiberYield` are the whole rule |
