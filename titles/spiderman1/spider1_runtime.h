@@ -1,18 +1,17 @@
 #pragma once
 
 #include "execution_exit.h"
+#include "game_runtime.h"
 #include "gpu_vk.h"
+#include "guest_program_image.h"
 #include "spider1_widescreen.h"
-#include "spider_runtime.h"
 
 class Core;
 
 namespace spider::spider1 {
 
-class Spider1Runtime final : public SpiderRuntime {
+class Spider1Runtime final : public GameRuntime {
 public:
-  const ExecutableIdentity &executableIdentity() const override;
-
   void *createContext(Core &core) override;
   void destroyContext(void *context) override;
   void registerOverrides(Game &game) override;
@@ -36,7 +35,6 @@ public:
   void stockCdReadLanded(Core &core, const psx::cd::StockReadLanding &landing) override;
 
 private:
-  static const ExecutableIdentity identity_;
   // Process-lifetime: aspect selection and the shared plan latch; per-frame state lives elsewhere.
   mutable Spider1Widescreen widescreen_{gpu_vk_latch_guest_projection};
   const GuestProgramImage image_ = {

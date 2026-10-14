@@ -9,8 +9,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-# Where every title's executable is provisioned, as <root>/<id>/<serial>; game/core/provisioning_root.h
-# names the same root for the C++ entries.
+# Where every title's executable is provisioned, as <root>/<id>/<serial>; SpiderCatalog
+# (game/core/spider_catalog.cpp) names the same root for the product.
 PROVISIONING_ROOT = Path("scratch/assets")
 
 
@@ -25,11 +25,9 @@ class Title:
     serial: str
     disc_env: str
     disc_executable: str
-    target: str
     runtime_modules: bool
     file_size: int
     executable_sha256: str
-    hosted: bool = False
 
     @property
     def guest_executable(self) -> Path:
@@ -44,7 +42,6 @@ class Title:
             "serial",
             "discEnv",
             "discExecutable",
-            "target",
             "runtimeModules",
             "fileSize",
             "executableSha256",
@@ -76,20 +73,15 @@ class Title:
             raise TitleCatalogError(
                 f"{path}: runtimeModules must be true or false, got {runtime_modules!r}"
             )
-        hosted = data.get("hosted", False)
-        if not isinstance(hosted, bool):
-            raise TitleCatalogError(f"{path}: hosted must be true or false, got {hosted!r}")
         return cls(
             id=str(data["id"]),
             label=str(data["label"]),
             serial=serial,
             disc_env=str(data["discEnv"]),
             disc_executable=disc_executable,
-            target=str(data["target"]),
             runtime_modules=runtime_modules,
             file_size=file_size,
             executable_sha256=executable_sha256,
-            hosted=hosted,
         )
 
 

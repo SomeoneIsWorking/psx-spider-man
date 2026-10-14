@@ -1,18 +1,14 @@
 #include "enter_electro_runtime.h"
 
+#include "enter_electro_frame_driver.h"
+#include "enter_electro_guest_facts.h"
+
+#include "game.h"
+
+#include <cstdlib>
 #include <lucent/log.h>
 
 namespace spider::enterelectro {
-
-const ExecutableIdentity EnterElectroRuntime::identity_{
-    .serial = SPIDER_TITLE_SERIAL,
-    .fileSize = SPIDER_TITLE_EXECUTABLE_SIZE,
-    .sha256 = SPIDER_TITLE_EXECUTABLE_SHA256,
-};
-
-const ExecutableIdentity &EnterElectroRuntime::executableIdentity() const {
-  return identity_;
-}
 
 void *EnterElectroRuntime::createContext(Core &) {
   return nullptr;
@@ -20,29 +16,55 @@ void *EnterElectroRuntime::createContext(Core &) {
 
 void EnterElectroRuntime::destroyContext(void *) {}
 
-void EnterElectroRuntime::registerOverrides(Game &) {
-  lucent::info("boot",
-               "title serial {} installs no title overrides: only its executable/crt0 boundary is "
-               "implemented",
-               serial());
+void EnterElectroRuntime::registerOverrides(Game &game) {
+  auto *driver = dynamic_cast<EnterElectroFrameDriver *>(game.frameDriver.get());
+  if (!driver) {
+    lucent::error("overrides", "Spider-Man 2 override registration has no title frame driver");
+    std::abort();
+  }
+  driver->installOverrides();
 }
 
-void EnterElectroRuntime::bootInit(Core &) {
-  refuseUnported("gameMain 0x80031F54", "EE-02 (first game-owned call)");
+// The frame driver enters the guest on its first step.
+void EnterElectroRuntime::bootInit(Core &) {}
+
+std::unique_ptr<FrameDriver> EnterElectroRuntime::createFrameDriver(Game &game) {
+  return std::make_unique<EnterElectroFrameDriver>(game, crt0Entry, submitFrameAddress);
 }
 
 const GuestProgramImage *EnterElectroRuntime::guestProgramImage() const {
   return &image_;
 }
 
+const PlatformHlePlan *EnterElectroRuntime::platformHlePlan() const {
+  return &platformServices;
+}
+
+const GuestPadBufferLayout *EnterElectroRuntime::guestPadBufferLayout() const {
+  return &padBuffers;
+}
+
 RenderCapabilities EnterElectroRuntime::renderCapabilities() const {
-  // No native producer or temporal product; widescreen only.
+  // No native producer or temporal product.
   return RenderCapabilities::widescreenOnly();
 }
 
 bool EnterElectroRuntime::guestVramIsPicture(const Game &) const {
-  refuseUnported("guest-VRAM picture ownership",
-                 "EE-02, then measure Enter Electro's render ownership");
+  // submitFrame draws the whole frame into the displayed VRAM page.
+  return true;
+}
+
+void EnterElectroRuntime::reportRun(Core &core) const {
+  const auto *driver =
+      core.game ? dynamic_cast<const EnterElectroFrameDriver *>(core.game->frameDriver.get())
+                : nullptr;
+  if (!driver) {
+    return;
+  }
+  lucent::info("frame",
+               "Spider-Man 2 run: {} presented field(s), {} waited field(s)",
+               driver->presentedFrames(),
+               driver->waitedFields());
 }
 
 } // namespace spider::enterelectro
