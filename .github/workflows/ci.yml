@@ -55,7 +55,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes \
             autoconf automake clang clang-format clang-tidy cmake glslc libfreetype-dev libtool \
-            libsdl3-dev libsdl3-image-dev libssl-dev libzstd-dev ninja-build pkg-config zlib1g-dev
+            libsdl3-dev libsdl3-image-dev libzstd-dev ninja-build pkg-config zlib1g-dev
       - name: Create the locked Python environment
         run: uv sync --frozen
       - name: Resolve psxport

@@ -2,7 +2,7 @@
 
 First migration target (USA). `SLUS_008.75`, the disc boot executable/serial, is its canonical
 title key. `Spider1Runtime` is the title-derived owner of its compatibility services, image-aware
-overrides, and optional temporal presentation. The shared `SpiderRuntime` base owns no guest address.
+overrides, and optional temporal presentation.
 Its measured
 749,568-byte executable SHA-256 is
 `d2270e35581ba083d9441166e9a45ead4f869ab07e890f9a512ad7ee4cc0b15b`; both provisioning and native
@@ -21,6 +21,6 @@ The first discriminator is both-logo completion followed by early `dem1`, with t
 movie body suspended and resumed by the runtime executor. Representative interactive gameplay is
 required before the generator and old corpus are deleted.
 
-The product is hosted: `createCatalog` (built from `title.json`) runs this title under psxport's
-`ProductHost` as a catalog of one, and boot is the host's generic sequence with `Spider1Runtime::bootInit` entering retail main
+The product is hosted: `spider::SpiderCatalog` (built from both `title.json` files) runs this title
+under psxport's `ProductHost` beside Enter Electro, and boot is the host's generic sequence with `Spider1Runtime::bootInit` entering retail main
 after the framework's audited crt0 (`stackBias` -8, crt0 `0x800873CC`).

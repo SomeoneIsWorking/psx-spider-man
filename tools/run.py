@@ -24,15 +24,17 @@ from provision import ProvisionError, provision_executable
 from title_catalog import Title, TitleCatalogError, load_catalog
 
 ROOT = Path(__file__).resolve().parents[1]
+# The one product: both titles, picked in its window.
+PRODUCT_TARGET = "spiderman_port"
 CYAN = "\033[1;36m"
 RED = "\033[1;31m"
 RESET = "\033[0m"
 USAGE = """Usage: ./run.sh [--prepare-only] [disc.chd]
 
-Build and launch the detected Neversoft Spider title from a user-supplied disc.
+Build and launch the Spider-Man product after provisioning the title on a user-supplied disc.
 
 Options:
-  --prepare-only  Provision and build the selected title without launching it.
+  --prepare-only  Provision and build without launching.
   -h, --help      Show this help and exit.
 """
 
@@ -171,7 +173,6 @@ def port_commands(
     cxx: str,
     python: str,
     jobs: int,
-    title: Title,
 ) -> list[list[str]]:
     return [
         [
@@ -186,9 +187,8 @@ def port_commands(
             f"-DCMAKE_CXX_COMPILER={cxx}",
             f"-DPython3_EXECUTABLE={python}",
             "-DBUILD_TESTING=OFF",
-            f"-DSPIDER_TITLES={title.id}",
         ],
-        ["cmake", "--build", str(build), "-j", str(jobs), "--target", title.target],
+        ["cmake", "--build", str(build), "-j", str(jobs), "--target", PRODUCT_TARGET],
     ]
 
 
@@ -199,7 +199,7 @@ def launch_environment(
     if not framework.is_absolute():
         framework = ROOT / framework
     policy = runpy.run_path(str(framework / "tools/port/launch_environment.py"))
-    result = policy["player_environment"](environ, product=title.id)
+    result = policy["player_environment"](environ, product=PRODUCT_TARGET)
     if not result.get("PSXPORT_ASSET_DIR"):
         result["PSXPORT_ASSET_DIR"] = framework_text
     result[title.disc_env] = disc
@@ -379,12 +379,11 @@ def selftest() -> int:
     spider2 = catalog.by_id("spiderman2")
     commands = port_commands(
         fake_framework,
-        Path("build/player/toolchain/spiderman1"),
+        Path("build/player/toolchain/product"),
         "/usr/bin/cc",
         "/usr/bin/c++",
         "/locked/python",
         7,
-        spider1,
     )
     checks += 1
     if commands[1][-2:] != ["--target", "spiderman_port"]:
@@ -405,22 +404,6 @@ def selftest() -> int:
         "ctest" in argument.lower() for command in commands for argument in command
     ):
         return refuse("launcher selftest failed: product path can run tests")
-    checks += 1
-    spider2_commands = port_commands(
-        fake_framework,
-        Path("build/player/toolchain/spiderman2"),
-        "/opt/gcc",
-        "/opt/g++",
-        "/locked/python",
-        7,
-        spider2,
-    )
-    if (
-        spider2_commands[1][-1] != "enter_electro_port"
-        or "-DSPIDER_TITLES=spiderman2" not in spider2_commands[0]
-    ):
-        return refuse("launcher selftest failed: Enter Electro target selection")
-
     checks += 1
     tools_commands = discdump_commands(
         fake_framework,
@@ -529,6 +512,13 @@ def selftest() -> int:
         or "PSXPORT_SPIDERMAN_DISC" in windowed
     ):
         return refuse("launcher selftest failed: title-specific disc environment")
+    checks += 1
+    run_log = Path(player_from_agent_shell["PSXPORT_LOG_FILE"])
+    if (
+        run_log.parent.name != PRODUCT_TARGET
+        or windowed["PSXPORT_LOG_FILE"] != str(run_log)
+    ):
+        return refuse("launcher selftest failed: run log is not the product's")
 
     print(f"launcher selftest: PASS — {checks} positive/refusal checks")
     return 0
@@ -597,23 +587,22 @@ def launch(argv: Sequence[str]) -> int:
         raise LauncherError(str(exc)) from exc
 
     say(f"building the native port (CMake -j{jobs})…")
-    port_build = build_root / title.id
+    port_build = build_root / "product"
     configure_port, build_port = port_commands(
-        framework, port_build, cc, cxx, python, jobs, title
+        framework, port_build, cc, cxx, python, jobs
     )
     run_or_refuse(configure_port, "cmake configure failed", quiet=True)
     run_or_refuse(build_port, "port build failed")
 
+    port_executable = port_build / "bin" / PRODUCT_TARGET
     if prepare_only:
-        say(f"{title.label} is built and ready at {port_build / 'bin' / title.target}")
+        say(f"{title.label} is provisioned; the product is built at {port_executable}")
         return 0
 
-    say(f"launching {title.label} (native PC port)…")
+    say("launching Spider-Man (native PC port)…")
     launch_env = launch_environment(os.environ, framework_text, disc, title)
-    port_executable = port_build / "bin" / title.target
-    # A hosted title opens the in-window picker; the others run their one executable.
-    arguments = [] if title.hosted else [str(title.guest_executable)]
-    os.execvpe(str(port_executable), [str(port_executable), *arguments], launch_env)
+    # No argument: the product picks among the provisioned titles in its window.
+    os.execvpe(str(port_executable), [str(port_executable)], launch_env)
     return 0
 
 

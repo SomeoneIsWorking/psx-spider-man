@@ -127,23 +127,6 @@ def main() -> int:
                 raise AssertionError(f"discExecutable {disc_executable!r} accepted")
     manifest["discExecutable"] = "SLUS_013.78"
 
-    checks += 2
-    assert catalog.by_id("spiderman1").hosted
-    assert not catalog.by_id("spiderman2").hosted
-
-    checks += 1
-    manifest["runtimeModules"] = False
-    manifest["hosted"] = "yes"
-    with tempfile.TemporaryDirectory(dir=ROOT / "scratch") as directory:
-        malformed = Path(directory) / "title.json"
-        malformed.write_text(json.dumps(manifest), encoding="utf-8")
-        try:
-            Title.from_manifest(malformed)
-        except TitleCatalogError as exc:
-            assert "hosted must be true or false" in str(exc)
-        else:
-            raise AssertionError("string hosted value accepted")
-
     print(f"title catalog: PASS — {checks} supported/refusal checks")
     return 0
 

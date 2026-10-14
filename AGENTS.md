@@ -27,11 +27,13 @@ respectively in `docs/project-goals.md`, `docs/project-state.md`, `docs/codemap.
 
 ## How the product starts
 
-Spider-Man 1 composes psxport's `psx::host::ProductHost` over the `SingleTitleCatalog` from `createCatalog` (`titles/spiderman1/spider1_catalog.*`,
-identity from `titles/spiderman1/title.json`) through the framework main; a catalog of one has no picker, so zero
-arguments boot the provisioned executable directly. Boot is the host's generic `TitleSession` sequence; the title's own steps are
-`Spider1Runtime` hooks (`registerOverrides`, `bootInit`) and `Spider1FrameDriver::stepFrame`.
-Enter Electro still starts through `spider::enterelectro::runPort` until it joins the catalog.
+Both titles are one product: `spiderman_port` runs psxport's `psx::host::ProductHost` over
+`spider::SpiderCatalog` (`game/core/spider_catalog.*`, identities from each `titles/<title>/title.json`)
+through the framework main. Zero arguments open the in-window picker over the provisioned titles; one
+executable argument runs that title directly. Boot is the host's generic `TitleSession` sequence. Spider-Man
+1's own steps are `Spider1Runtime` hooks (`registerOverrides`, `bootInit`) and `Spider1FrameDriver::stepFrame`;
+Spider-Man 2 is `DriverOwned` and `EnterElectroFrameDriver` enters its crt0 and runs one budgeted guest turn
+and one presentation fence per step.
 
 ## Spider-Man first discriminator
 
@@ -44,8 +46,8 @@ native and original-call dispatch, invalidation,
 oracle comparison, and bounded-fallback/no-interpreter-selector evidence are all required first.
 
 Enter Electro remains behind Spider-Man under the single-title completion rule. Preserve its measured
-`SLUS_013.78` identity, crt0 facts, and first game-owned call `0x80031F54`; do not infer any Spider-Man
-address or behavior from lineage similarity.
+`SLUS_013.78` identity, entry and present point (`docs/re-frontier.md` EE-00..EE-04); do not infer any
+Spider-Man address or behavior from lineage similarity.
 
 ## Working discipline
 

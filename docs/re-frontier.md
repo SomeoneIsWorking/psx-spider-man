@@ -35,7 +35,7 @@ Statuses: ✅ re-verified · 🟡 re-partial (honest gap) · 🔬 in-progress ·
 - status: re-verified
 - deps:
 - evidence: PS-X EXE header: entry 0x8008739C, load 0x80010000, text 0xB6800; title selection authenticates serial, size, PS-X EXE identity, and SHA-256 before guest execution. CdInit's HookEntryInt continuation is binary-measured at 0x8008B990.
-- where: titles/spiderman1/title.json; game/core/executable_identity.*; runtime-image provisioner target in docs/migration.md
+- where: titles/spiderman1/title.json; external/psxport/runtime/psx/host/title_selection.cpp; runtime-image provisioner target in docs/migration.md
 - gap:
 - notes: This step proves the image identity and binary facts only. It does not claim Lightrec execution; the old emitted-corpus counts are not part of the target product contract.
 
@@ -43,7 +43,7 @@ Statuses: ✅ re-verified · 🟡 re-partial (honest gap) · 🔬 in-progress ·
 - status: re-partial
 - deps: RE-00
 - evidence: psxport now exposes per-Core dispatchGuest/callOriginal, typed exits, image identity, override dispatch, and invalidation; the sole Spider product calls dispatchGuest at authenticated crt0.
-- where: external/psxport/runtime/cpu; game/core/guest_execution.*; titles/spiderman2/enter_electro_port.cpp
+- where: external/psxport/runtime/cpu; game/core/guest_execution.*; titles/spiderman2/enter_electro_frame_driver.cpp
 - gap: The exact maintained Lightrec backend is linked and its Linux x86-64 synthetic runtime contract proves nonzero translated blocks. Prove the same denominator on an authenticated Spider image, with classified bounded fallback and no selectable interpreter mode.
 - notes: Lightrec owns translation/cache memory; psxport owns Core synchronization, bounded exits, runtime dispatch, original calls, and invalidation.
 
@@ -453,15 +453,31 @@ fault proves no causal relationship between those events.
 ### EE-01 — Enter Electro crt0 and direct derived runtime
 - status: re-verified
 - deps: EE-00
-- evidence: Independent crt0 extraction over the real USA SLUS_013.78 resolves BSS 0x800C2AF4..0x800CF0DC, stack globals 0x800C0D10/0x800C0D0C with bias -8, heap 0x800CF0DC, gp 0x800C1764, libcInit 0x800988B0, and first game call 0x80031F54. The current title runtime carries those facts and builds against the shared executor without borrowing Spider-Man addresses.
-- where: titles/spiderman2/enter_electro_runtime.{h,cpp}; authenticated guest crt0 0x80093C68
+- evidence: Independent crt0 extraction over the real USA SLUS_013.78 resolves BSS 0x800C2AF4..0x800CF0DC, stack globals 0x800C0D10/0x800C0D0C with bias -8, heap 0x800CF0DC, gp 0x800C1764, libcInit 0x800988B0, and first game call 0x80031F54. No port code holds them: the FrameDriver enters the retail crt0, which sets BSS, stack, heap and gp itself.
+- where: authenticated guest crt0 0x80093C68; crt0Entry in titles/spiderman2/enter_electro_guest_facts.h
 - gap:
 - notes: No Spider-Man 1 title address or title context is bound.
 
 ### EE-02 — Enter Electro first game-owned call
-- status: todo
+- status: re-verified
 - deps: EE-01, DYN-03
-- evidence: crt0 jal 0x80031F54 at 0x80093D04; the derived runtime names this exact boundary and aborts rather than dispatching unported behavior.
-- where: guest FUN_80031F54; EnterElectroRuntime::bootInit
-- gap: Reverse-engineer and execute the title own gameMain initialization without copying SLUS_008.75 addresses or hooks.
-- notes: The abort is the current success condition. Rendering, widescreen, runtime modules, and gameplay remain downstream and unclaimed.
+- evidence: crt0 jal 0x80031F54 at 0x80093D04. With bootEntry DriverOwned the FrameDriver enters crt0 and the guest runs main 0x80031F54 -> FUN_800773E8 (CdInit 0x8006FB44, Marvel logo, STR player 0x8003035C) through Lightrec with no title override but submitFrame. The old hang was runPort resuming every budget exit without a presentation fence or display field, so the first libetc VBlank wait (FUN_800976E4 under CdInit) never returned; a 600-step headless run now ends at the cap with 600 fences.
+- where: titles/spiderman2/enter_electro_frame_driver.cpp; guest FUN_80031F54
+- gap:
+- notes: Ported behaviour is the retail body itself; no SLUS_008.75 address or hook is reused.
+
+### EE-03 — Enter Electro present point, VSync and pad buffers
+- status: re-verified
+- deps: EE-02
+- evidence: Ghidra over SLUS_013.78 (decomp manifest entry spiderman2). libgpu leaves by their diagnostic strings: DrawOTag 0x8008E574, PutDrawEnv 0x8008E5E4, PutDispEnv 0x8008E6A4, DrawSync 0x8008E048, ResetGraph 0x8008DDE0. submitFrame 0x8006BE98 is DrawOTag's only caller: ResetGraph(1), PutDispEnv(db+0x5C), PutDrawEnv(db), DrawOTag(db->ot+0x3FFC) with db = *(gp+0xD20); the gameplay loop FUN_80031D40 calls it once per frame. libetc VSync is 0x80091604..0x8009177B (GPUSTAT pointer 0x800BEA60, Timer1 pointer 0x800BEA64); VSync(-1) returns the VBlank count 0x800C082C. PadInitDirect 0x800960AC is called from FUN_80076050 with buffers 0x800B2CC0/0x800B2CE2; a forced-button run reads 00 41 08 40 at 0x800B2CC0 on frame 150.
+- where: titles/spiderman2/enter_electro_guest_facts.h; titles/spiderman2/enter_electro_frame_driver.cpp
+- gap:
+- notes: The gameplay loop paces itself: FUN_80069154(1) spins on the VBlank counter at gp+0xCD0 for one field, then DrawSync(1), then submitFrame (0x80031EA4); FUN_80017940 does the same. submitFrame therefore does not end a turn. A turn ends at a libetc VSync wait or when the field's cycle budget is spent, and its one field presents if submitFrame ran inside it, otherwise rescans the last frame.
+
+### EE-04 — Enter Electro intro STR stream
+- status: todo
+- deps: EE-03
+- evidence: After the logo, FUN_800773E8 calls the STR player FUN_8003035C (0x8007766C/0x80077688); it waits for its first frame through FUN_80030D78/FUN_80030D14 -> FUN_80093548, a StGetNext-like poll of the libstr ring at 0x800CE44C (slot state 2 = ready). The ring never fills: the screen stays black and the log reports a pending CD interrupt (I_STAT&I_MASK 0x004) no SysEnq element claims.
+- where: guest FUN_8003035C, FUN_80093548; the title's CD interrupt and stream delivery
+- gap: Trace the CdInit callback install and the CD stream read that feeds the ring, as Spider-Man 1 did in issues 0024/0026, and deliver its sectors.
+- notes: Every later screen, rendering ownership, widescreen, runtime modules and gameplay depend on this.

@@ -11,16 +11,6 @@
 
 namespace spider::spider1 {
 
-const ExecutableIdentity Spider1Runtime::identity_{
-    .serial = SPIDER_TITLE_SERIAL,
-    .fileSize = SPIDER_TITLE_EXECUTABLE_SIZE,
-    .sha256 = SPIDER_TITLE_EXECUTABLE_SHA256,
-};
-
-const ExecutableIdentity &Spider1Runtime::executableIdentity() const {
-  return identity_;
-}
-
 // `NativeFunction` carries no owner pointer, so overrides find the title owner through the Core;
 // the checked downcast refuses a foreign Core.
 Spider1Runtime &Spider1Runtime::from(Core &core) {

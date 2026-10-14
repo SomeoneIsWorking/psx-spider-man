@@ -11,7 +11,6 @@ function(spider_read_title TITLE_ID PREFIX)
       serial
       discEnv
       discExecutable
-      target
       fileSize
       executableSha256)
     string(JSON _value ERROR_VARIABLE _error GET "${_json}" "${_field}")
@@ -21,12 +20,13 @@ function(spider_read_title TITLE_ID PREFIX)
     string(TOUPPER "${_field}" _upper)
     set("${PREFIX}_${_upper}" "${_value}" PARENT_SCOPE)
   endforeach()
-  # The PS-X EXE header words are optional until a title joins the host catalog.
+  # The PS-X EXE header words the host's selection cross-checks.
   foreach(_field entry gp textAddress textSize stackAddress stackOffset)
     string(JSON _value ERROR_VARIABLE _error GET "${_json}" header ${_field})
-    if(NOT _error)
-      string(TOUPPER "${_field}" _upper)
-      set("${PREFIX}_HEADER_${_upper}" "${_value}" PARENT_SCOPE)
+    if(_error)
+      message(FATAL_ERROR "${_manifest}: missing or invalid header.${_field}: ${_error}")
     endif()
+    string(TOUPPER "${_field}" _upper)
+    set("${PREFIX}_HEADER_${_upper}" "${_value}" PARENT_SCOPE)
   endforeach()
 endfunction()

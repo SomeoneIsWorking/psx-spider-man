@@ -21,17 +21,14 @@ def main() -> int:
     build = ROOT / "build" / "consumer-verify"
     return run_consumer_verification(
         ConsumerVerifyConfig(
-            name="Spider-Man PSX native/Lightrec products",
+            name="Spider-Man PSX native/Lightrec product",
             root=ROOT,
             build=build,
             psxport=PSXPORT,
             product=build / "bin" / "spiderman_port",
             cmake_module=ROOT / "CMakeLists.txt",
             test_regex=".",
-            cmake_definitions=(
-                "-DBUILD_TESTING=ON",
-                "-DSPIDER_TITLES=spiderman1;spiderman2",
-            ),
+            cmake_definitions=("-DBUILD_TESTING=ON",),
             python=Path(sys.executable),
         )
     )

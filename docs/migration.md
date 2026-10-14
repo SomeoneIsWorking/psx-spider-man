@@ -11,8 +11,8 @@ Migration changes the execution owner, not the recovered game facts.
 - Spider-Man USA is `SLUS_008.75`; its PS-X EXE entry is `0x8008739C`, load address
   `0x80010000`, and text size `0xB6800`.
 - Enter Electro USA is `SLUS_013.78`; its entry is `0x80093C68`, load address `0x80010000`, and
-  text size `0xBF800`. Eight crt0 facts are independently derived, and its first game-owned call is
-  `0x80031F54`.
+  text size `0xBF800`. Its first game-owned call is `0x80031F54`; the retail crt0 runs as guest code
+  and sets up its own BSS, stack, heap and gp.
 - The retired Spider-Man product completed both real-disc logo movies, the 300-field post-logo wait,
   and reached early `dem1` under the native frame/service owners. It did not establish representative
   gameplay, complete native rendering, or Lightrec execution.

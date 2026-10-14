@@ -4,8 +4,15 @@
   "serial": "SLUS_013.78",
   "discEnv": "PSXPORT_SPIDERMAN2_DISC",
   "discExecutable": "SLUS_013.78",
-  "target": "enter_electro_port",
   "runtimeModules": false,
   "fileSize": 786432,
-  "executableSha256": "dbe6c3f32337fe0fa7085519c728a75abf5d007b45ea0ba58178bcf84b72908a"
+  "executableSha256": "dbe6c3f32337fe0fa7085519c728a75abf5d007b45ea0ba58178bcf84b72908a",
+  "header": {
+    "entry": "0x80093C68",
+    "gp": "0x00000000",
+    "textAddress": "0x80010000",
+    "textSize": "0x000BF800",
+    "stackAddress": "0x801FFFF0",
+    "stackOffset": "0x00000000"
+  }
 }

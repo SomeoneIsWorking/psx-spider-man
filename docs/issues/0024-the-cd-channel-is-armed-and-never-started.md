@@ -210,7 +210,7 @@ client attempts over 90 s with `Connection refused`. The consequence is not cosm
 the only command that reports translated blocks, executed instructions, cache hits and misses,
 invalidations and interpreter fallback **by reason**, and every number above would otherwise have
 had to come from a 1.2 GB log of the guest polling `I_STAT` in a spin. `store_observe_attach` was
-missing for the same reason on the same spine. Both are now attached in `runPort`, using the
+missing for the same reason on the same spine. Both are now attached by the host's `TitleSession::boot`, using the
 framework's own owners; with the knob unset `attach` returns the requested cap unchanged and starts
 nothing, so a player's run is the same loop it was.
 

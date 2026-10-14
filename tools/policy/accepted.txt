@@ -1,15 +1,6 @@
 # re-harness cpp_policy sites this repository has not yet moved to an owner. The list only shrinks:
 # a site that no longer occurs fails the gate until its line is deleted.
 
-# Hand-written mains still outside the framework main; each goes when its title moves to psxport_add_product.
-titles/spiderman2/main.cpp:entry point:main
-
-# Framework steps a title no longer spells out (TitleSession and ProductHost compose them); they go when
-# Spider-Man 2 gets its FrameDriver.
-titles/spiderman2/enter_electro_port.cpp:retired name:load_exe
-titles/spiderman2/enter_electro_port.cpp:retired name:store_observe_attach
-titles/spiderman2/enter_electro_port.cpp:retired name:watchdog_init
-
 # Functions in the global namespace.
 tests/spider1_guest_boundary_owners_test.cpp:global-namespace function:test_cd_initialization_installs_every_slot_and_keeps_the_guests_own_mask_bits
 tests/spider1_guest_boundary_owners_test.cpp:global-namespace function:test_fiber_reports_its_phase_and_its_outstanding_field

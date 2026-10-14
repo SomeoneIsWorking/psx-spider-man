@@ -42,7 +42,6 @@ PKG_CONFIG_REQUIREMENTS = (
     Requirement("freetype2", "FreeType development files"),
     Requirement("zlib", "zlib development files"),
     Requirement("libzstd", "zstd development files"),
-    Requirement("openssl", "OpenSSL development files"),
 )
 
 PACKAGE_MAP = {
@@ -58,7 +57,6 @@ PACKAGE_MAP = {
         "freetype2": "freetype-devel",
         "zlib": "zlib-devel",
         "libzstd": "libzstd-devel",
-        "openssl": "openssl-devel",
     },
     "debian": {
         "cmake": "cmake",
@@ -72,7 +70,6 @@ PACKAGE_MAP = {
         "freetype2": "libfreetype-dev",
         "zlib": "zlib1g-dev",
         "libzstd": "libzstd-dev",
-        "openssl": "libssl-dev",
     },
     "macos": {
         "cmake": "cmake",
@@ -84,7 +81,6 @@ PACKAGE_MAP = {
         "freetype2": "freetype",
         "zlib": "zlib",
         "libzstd": "zstd",
-        "openssl": "openssl",
     },
 }
 
@@ -159,7 +155,7 @@ def install_instructions(missing: list[Requirement], family: str) -> str:
                 "Install the supported Windows toolchain yourself, then rerun from Git Bash:",
                 "  winget install Kitware.CMake Git.Git KhronosGroup.VulkanSDK",
                 '  winget install Microsoft.VisualStudio.2022.BuildTools --override "--wait --passive --add Microsoft.VisualStudio.Workload.VCTools"',
-                "  vcpkg install sdl3 sdl3-image freetype zlib zstd openssl",
+                "  vcpkg install sdl3 sdl3-image freetype zlib zstd",
             ]
         )
         return "\n".join(lines)
