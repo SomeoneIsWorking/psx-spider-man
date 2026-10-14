@@ -11,7 +11,6 @@ namespace spider::spider1 {
 
 class Spider1Runtime final : public SpiderRuntime {
 public:
-  std::string_view discEnvironment() const override;
   const ExecutableIdentity &executableIdentity() const override;
 
   void *createContext(Core &core) override;

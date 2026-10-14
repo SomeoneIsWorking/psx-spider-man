@@ -10,8 +10,8 @@ function(spider_read_title TITLE_ID PREFIX)
       label
       serial
       discEnv
+      discExecutable
       target
-      guestExecutable
       fileSize
       executableSha256)
     string(JSON _value ERROR_VARIABLE _error GET "${_json}" "${_field}")

@@ -27,7 +27,7 @@ run.sh -> bootstrap.py -> tools/run.py
                             |
                             +-- title catalog -> authenticated PS-X EXE (no guest body emitted)
                                     |
-framework main (psxport_add_product) -> psx::host::ProductHost over Spider1Catalog (external/psxport/docs/title-host.md)
+framework main (psxport_add_product) -> psx::host::ProductHost over a SingleTitleCatalog (external/psxport/docs/title-host.md)
                                     |
               psx::host::TitleSession: generic boot, then one FrameLoopShell step per host frame
                                     |
@@ -37,8 +37,8 @@ framework main (psxport_add_product) -> psx::host::ProductHost over Spider1Catal
                             Spider1Runtime::resumeBootstrapBoundary services it as one field
 ```
 
-Spider-Man 1 is hosted and its entry is the framework main: `createCatalog()` names `Spider1Catalog`,
-a catalog of one, so zero arguments boot `scratch/assets/<slug>/<serial>` without a picker and one
+Spider-Man 1 is hosted and its entry is the framework main: `createCatalog()` builds psxport's
+`SingleTitleCatalog`, so zero arguments boot `<kProvisioningRoot>/<slug>/<serial>` (`game/core/provisioning_root.h`) without a picker and one
 executable argument runs that serial-identified executable (`tools/run.py` passes none for a title
 whose manifest says `hosted`).
 `spider::enterelectro::runPort` (`titles/spiderman2/enter_electro_port.cpp`) is Enter Electro's process spine only, until that
@@ -54,7 +54,7 @@ calls `runBootPrefix`, so they wait for the native frame owner that issue 0021 d
 | File | Class / function | Responsibility |
 |---|---|---|
 | — | `psxport_add_product` | entry is the framework main: `spiderman_port` runs `spider::spider1::createCatalog()` through `psx::host::ProductHost`, which owns `-h`/`--help` and the one-executable override |
-| `spider_runtime.{h,cpp}` | `SpiderRuntime` | the address-free lineage seam: serial, disc key (`discEnvVar`) and refusal wording both titles share. Owns no guest address. |
+| `spider_runtime.{h,cpp}` | `SpiderRuntime` | the address-free lineage seam: serial and refusal wording both titles share; the disc key and disc path are `title.json` facts carried by each title's `TitleIdentity`. Owns no guest address. |
 | `executable_identity.{h,cpp}` | `ExecutableIdentity`, `ExecutableIdentityStatus`, `verifyExecutable`, `verifyExecutableFile` | shipping serial, size, magic and SHA-256 authentication of the player's executable |
 | `guest_execution.{h,cpp}` | `GuestExecution`, `reportExecutionResult` | one `Core`'s entry into, resumption at, and scoped original call through psxport's executor |
 | `native_execution.h` | `dispatchGuestOrPropagate`, `callOriginalOrPropagate` | the two leaves a native override uses: dispatch a guest body, or bypass the current override for one call. Header-only, no state. |
@@ -80,7 +80,7 @@ Compiled as `spider_render_contracts`; nothing in the product links these yet (s
 
 | File | Class / function | Responsibility |
 |---|---|---|
-| `spider1_catalog.{h,cpp}` | `Spider1Catalog` | the host catalog: Spider-Man 1's identity, built from `title.json` (id, label, serial, size, SHA-256, PS-X EXE header words). Spider-Man 2 joins when it boots (EE-02). |
+| `spider1_catalog.{h,cpp}` | `createCatalog` | the host catalog: Spider-Man 1's identity, built from `title.json` (id, label, serial, disc key and path, size, SHA-256, PS-X EXE header words), in psxport's `SingleTitleCatalog`. Spider-Man 2 joins when it boots (EE-02). |
 | `spider1_bootstrap_turn.{h,cpp}` | `Spider1BootstrapTurn` | one host step of the retail program: enter main after the host's crt0, service the boundary the guest stopped at, resume to the next; a turn that ended on the cycle budget delivers the one display field that time covers and resumes |
 | `spider1_runtime.{h,cpp}` | `Spider1Runtime` | the authenticated `SLUS_008.75` image policy: program image, platform-HLE plan, pad and CD callback layouts, render capabilities, widescreen owner, CD-stream service, overlay-heap arena for `stockCdReadLanded` (published through psxport `guest_code_module`) |
 | `spider1_frame_driver.{h,cpp}` | `Spider1FrameDriver` | **the frame turn for this title**: field delivery, the one presentation fence per host step, the boot overrides, and the movie/stream/VSync boundaries. Implements `Spider1ModeHost`. |
@@ -143,7 +143,7 @@ Hermetic contract and ownership tests: `spider1_mode_rules`, `spider1_mode_trans
 | --- | --- | --- |
 | The ONE SDL drain | `psx::input::HostInput::drainEvents` (`runtime/psx/input/host_input.*`) | records key state, feeds the overlay, ends the process on a window close |
 | This turn's mask | `psx::input::HostInput::poll(bool)` → `Pad::pollHostInput` (framework) | force/replay/hold wins over the host mask, so a headless leg keeps its own input |
-| The per-frame pump | `serviceBootstrapMovieVsync` / `serviceBootstrapStreamWait` → `game_.pad.serviceFrame()` (framework `Pad`, `runtime/psx/input/pad_input.*`) | once per serviced movie or stream field, before the fence |
+| The per-frame pump | `serviceBootstrapMovieVsync` / `serviceBootstrapStreamWait` → `psx::frame::LogicFrame::begin` (framework; the logic-frame clock, the producer-census frame, then `Pad::serviceFrame`) | once per serviced movie or stream field, after its commit |
 | The guest's field-time packet | framework `Pad::fillBuffer` into the slots `Spider1Runtime::guestPadBufferLayout()` names | the 4-byte digital packet per VBlank |
 | A retail pad read from guest code | `Spider1FrameDriver::serviceBootTail` (override on `padRead`) | super-calls the guest body; during the post-logo boot wait it yields the field the guest is blocked on |
 | **Movie skip** | the same `Pad` mask, sampled by `Spider1FrameDriver::serviceBootstrapMovieVsync` each STR field | the guest keeps its own `VSync(0)` answer; the host only supplies the field and the pad frame that goes with it. There is no second pad drain and no movie-local key rule. |

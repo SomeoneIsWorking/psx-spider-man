@@ -10,14 +10,6 @@ const ExecutableIdentity EnterElectroRuntime::identity_{
     .sha256 = SPIDER_TITLE_EXECUTABLE_SHA256,
 };
 
-std::string_view EnterElectroRuntime::discEnvironment() const {
-  return SPIDER_TITLE_DISC_ENV;
-}
-
-std::string_view EnterElectroRuntime::defaultExecutable() const {
-  return SPIDER_TITLE_GUEST_EXE;
-}
-
 const ExecutableIdentity &EnterElectroRuntime::executableIdentity() const {
   return identity_;
 }

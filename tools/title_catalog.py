@@ -9,6 +9,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+# Where every title's executable is provisioned, as <root>/<id>/<serial>; game/core/provisioning_root.h
+# names the same root for the C++ entries.
+PROVISIONING_ROOT = Path("scratch/assets")
+
+
 class TitleCatalogError(ValueError):
     """The selected media or tracked title catalogue has no unambiguous identity."""
 
@@ -19,12 +24,16 @@ class Title:
     label: str
     serial: str
     disc_env: str
+    disc_executable: str
     target: str
-    guest_executable: Path
     runtime_modules: bool
     file_size: int
     executable_sha256: str
     hosted: bool = False
+
+    @property
+    def guest_executable(self) -> Path:
+        return PROVISIONING_ROOT / self.id / self.serial
 
     @classmethod
     def from_manifest(cls, path: Path) -> Title:
@@ -34,8 +43,8 @@ class Title:
             "label",
             "serial",
             "discEnv",
+            "discExecutable",
             "target",
-            "guestExecutable",
             "runtimeModules",
             "fileSize",
             "executableSha256",
@@ -46,6 +55,14 @@ class Title:
         serial = str(data["serial"]).upper()
         if not re.fullmatch(r"[A-Z]{4}_[0-9]{3}\.[0-9]{2}", serial):
             raise TitleCatalogError(f"{path}: malformed PlayStation serial {serial!r}")
+        disc_executable = str(data["discExecutable"])
+        if not re.fullmatch(r"([A-Z0-9_]+/)*[A-Z]{4}_[0-9]{3}\.[0-9]{2}", disc_executable) or (
+            disc_executable.rsplit("/", 1)[-1] != serial
+        ):
+            raise TitleCatalogError(
+                f"{path}: discExecutable {disc_executable!r} is not a '/'-separated ISO9660 path "
+                f"to {serial}"
+            )
         executable_sha256 = str(data["executableSha256"]).lower()
         if not re.fullmatch(r"[0-9a-f]{64}", executable_sha256):
             raise TitleCatalogError(
@@ -67,8 +84,8 @@ class Title:
             label=str(data["label"]),
             serial=serial,
             disc_env=str(data["discEnv"]),
+            disc_executable=disc_executable,
             target=str(data["target"]),
-            guest_executable=Path(data["guestExecutable"]),
             runtime_modules=runtime_modules,
             file_size=file_size,
             executable_sha256=executable_sha256,

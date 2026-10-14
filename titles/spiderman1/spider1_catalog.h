@@ -1,29 +1,13 @@
 #pragma once
 
-#include "spider1_runtime.h"
 #include "title_catalog.h"
 
-#include <filesystem>
 #include <memory>
-#include <span>
 
 namespace spider::spider1 {
 
-// Spider-Man 1 as the multi-title host's catalog. Spider-Man 2 joins it when its first game-owned
-// call is ported (EE-02).
-class Spider1Catalog final : public psx::host::TitleCatalog {
-public:
-  std::string_view productName() const override;
-  std::filesystem::path provisioningRoot() const override;
-  std::span<const psx::host::TitleIdentity> titles() const override;
-  Spider1Runtime &runtime(std::size_t index) const override;
-
-private:
-  // The host asks for a mutable runtime from a const catalog; the runtime is the process's one.
-  mutable Spider1Runtime runtime_;
-};
-
-// The product's catalog, run by the framework main (psxport_add_product).
+// The product's catalog, run by the framework main (psxport_add_product): Spider-Man 1 alone until
+// Spider-Man 2 joins it when its first game-owned call is ported (EE-02).
 std::unique_ptr<psx::host::TitleCatalog> createCatalog();
 
 } // namespace spider::spider1

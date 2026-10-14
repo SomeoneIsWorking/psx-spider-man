@@ -17,10 +17,6 @@ const ExecutableIdentity Spider1Runtime::identity_{
     .sha256 = SPIDER_TITLE_EXECUTABLE_SHA256,
 };
 
-std::string_view Spider1Runtime::discEnvironment() const {
-  return SPIDER_TITLE_DISC_ENV;
-}
-
 const ExecutableIdentity &Spider1Runtime::executableIdentity() const {
   return identity_;
 }

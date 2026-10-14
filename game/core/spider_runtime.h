@@ -11,9 +11,7 @@ namespace spider {
 class SpiderRuntime : public GameRuntime {
 public:
   std::string_view serial() const;
-  virtual std::string_view discEnvironment() const = 0;
   virtual const ExecutableIdentity &executableIdentity() const = 0;
-  const char *discEnvVar() const final;
 
 protected:
   [[noreturn]] void refuseUnported(std::string_view boundary, std::string_view frontier) const;
