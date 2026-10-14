@@ -10,6 +10,9 @@
 #include "executable_identity.h"
 #include "game.h"
 #include "guest_execution.h"
+#include "machine.h"
+#include "provisioning_root.h"
+#include "title_catalog.h"
 
 #include <lucent/log.h>
 #include <memory>
@@ -26,6 +29,15 @@ namespace spider::enterelectro {
 
 namespace {
 
+// The disc facts; authentication is EnterElectroRuntime's ExecutableIdentity.
+constexpr psx::host::TitleIdentity kTitle{
+    .displayName = SPIDER_TITLE_LABEL,
+    .serial = SPIDER_TITLE_SERIAL,
+    .slug = SPIDER_TITLE_ID,
+    .discEnvVar = SPIDER_TITLE_DISC_ENV,
+    .discExecutablePath = SPIDER_TITLE_DISC_EXECUTABLE,
+};
+
 bool isHelpArgument(int argc, char **argv) {
   return argc == 2 && argv[1] &&
          (std::string_view(argv[1]) == "-h" || std::string_view(argv[1]) == "--help");
@@ -37,8 +49,9 @@ void printUsage(const char *program, const EnterElectroRuntime &runtime) {
   lucent::info("boot",
                "Run the {} native port with an authenticated extracted PS-X executable.",
                runtime.serial());
-  lucent::info(
-      "boot", "With no argument, the executable defaults to {}.", runtime.defaultExecutable());
+  lucent::info("boot",
+               "With no argument, the executable defaults to {}.",
+               kTitle.defaultExecutable(kProvisioningRoot).string());
   lucent::info("boot", "Options: -h, --help  Show this help and exit.");
 }
 
@@ -50,7 +63,8 @@ int runPort(EnterElectroRuntime &runtime, int argc, char **argv) {
     printUsage(argv[0], runtime);
     return 0;
   }
-  const std::string path = argc > 1 ? argv[1] : std::string(runtime.defaultExecutable());
+  const std::string path =
+      argc > 1 ? argv[1] : kTitle.defaultExecutable(kProvisioningRoot).string();
   const ExecutableIdentityResult identity =
       verifyExecutableFile(path, runtime.executableIdentity());
   if (!identity) {
@@ -63,6 +77,7 @@ int runPort(EnterElectroRuntime &runtime, int argc, char **argv) {
   psxport_install_game(runtime);
 
   auto game = std::make_unique<Game>();
+  psx::Machine{*game}.insertDisc(kTitle);
   Core *core = &game->core;
 
   watchdog_init();
@@ -81,7 +96,7 @@ int runPort(EnterElectroRuntime &runtime, int argc, char **argv) {
   }
   GuestExecution execution(*core);
 
-  // This spine skips native_boot's loop, so the debug endpoint and store observation attach here.
+  // This title owns its loop, so the debug endpoint and store observation attach here.
   game->dbg_server.start(core);
   store_observe_attach(*core);
   lucent::info("boot",

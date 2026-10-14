@@ -1,52 +1,33 @@
 #include "spider1_catalog.h"
 
-#include <array>
-#include <cstdlib>
-#include <lucent/log.h>
+#include "provisioning_root.h"
+#include "single_title_catalog.h"
+#include "spider1_runtime.h"
 
 namespace spider::spider1 {
 namespace {
 
-constexpr std::array<psx::host::TitleIdentity, 1> kIdentities{{
-    psx::host::TitleIdentity{
-        .displayName = SPIDER_TITLE_LABEL,
-        .serial = SPIDER_TITLE_SERIAL,
-        .slug = SPIDER_TITLE_ID,
-        .fileSize = SPIDER_TITLE_EXECUTABLE_SIZE,
-        .sha256 = SPIDER_TITLE_EXECUTABLE_SHA256,
-        .entry = SPIDER_TITLE_HEADER_ENTRY,
-        .globalPointer = SPIDER_TITLE_HEADER_GP,
-        .textAddress = SPIDER_TITLE_HEADER_TEXT_ADDRESS,
-        .textSize = SPIDER_TITLE_HEADER_TEXT_SIZE,
-        .stackAddress = SPIDER_TITLE_HEADER_STACK_ADDRESS,
-        .stackOffset = SPIDER_TITLE_HEADER_STACK_OFFSET,
-    },
-}};
+constexpr psx::host::TitleIdentity kIdentity{
+    .displayName = SPIDER_TITLE_LABEL,
+    .serial = SPIDER_TITLE_SERIAL,
+    .slug = SPIDER_TITLE_ID,
+    .fileSize = SPIDER_TITLE_EXECUTABLE_SIZE,
+    .sha256 = SPIDER_TITLE_EXECUTABLE_SHA256,
+    .entry = SPIDER_TITLE_HEADER_ENTRY,
+    .globalPointer = SPIDER_TITLE_HEADER_GP,
+    .textAddress = SPIDER_TITLE_HEADER_TEXT_ADDRESS,
+    .textSize = SPIDER_TITLE_HEADER_TEXT_SIZE,
+    .stackAddress = SPIDER_TITLE_HEADER_STACK_ADDRESS,
+    .stackOffset = SPIDER_TITLE_HEADER_STACK_OFFSET,
+    .discEnvVar = SPIDER_TITLE_DISC_ENV,
+    .discExecutablePath = SPIDER_TITLE_DISC_EXECUTABLE,
+};
 
 } // namespace
 
-std::string_view Spider1Catalog::productName() const {
-  return "Spider-Man";
-}
-
-std::filesystem::path Spider1Catalog::provisioningRoot() const {
-  return "scratch/assets";
-}
-
-std::span<const psx::host::TitleIdentity> Spider1Catalog::titles() const {
-  return kIdentities;
-}
-
-Spider1Runtime &Spider1Catalog::runtime(std::size_t index) const {
-  if (index >= kIdentities.size()) {
-    lucent::error("spider1-catalog", "no runtime for catalog index {}", index);
-    std::abort();
-  }
-  return runtime_;
-}
-
 std::unique_ptr<psx::host::TitleCatalog> createCatalog() {
-  return std::make_unique<Spider1Catalog>();
+  return std::make_unique<psx::host::SingleTitleCatalog>(
+      kIdentity, kProvisioningRoot, std::make_unique<Spider1Runtime>());
 }
 
 } // namespace spider::spider1

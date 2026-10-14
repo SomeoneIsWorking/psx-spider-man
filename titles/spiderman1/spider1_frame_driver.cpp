@@ -11,6 +11,7 @@
 #include "execution_services.h"
 #include "game.h"
 #include "host_turn.h"
+#include "logic_frame.h"
 #include "native_execution.h"
 #include "spider1_field_schedule.h"
 #include "spider1_platform_facts.h"
@@ -117,9 +118,7 @@ void Spider1FrameDriver::serviceBootstrapMovieVsync(Core &core) {
   completeMovieVsync(core, returnValue);
   commitMovieField(core);
   // The next logic frame starts after presenting, so its OT attributes survive the fence.
-  ++game_.timing.logicFrame;
-  core.rsub.otAttr.beginLogicFrame(game_.timing.logicFrame);
-  game_.pad.serviceFrame();
+  psx::frame::LogicFrame::begin(game_, game_.timing.logicFrame + 1u);
   ++movieFieldCount_;
   core.pc = returnPc;
   lucent::info(
@@ -149,9 +148,7 @@ void Spider1FrameDriver::deliverBootstrapWaitField(Core &core, uint32_t continua
     std::abort();
   }
   commitMovieField(core);
-  ++game_.timing.logicFrame;
-  core.rsub.otAttr.beginLogicFrame(game_.timing.logicFrame);
-  game_.pad.serviceFrame();
+  psx::frame::LogicFrame::begin(game_, game_.timing.logicFrame + 1u);
   core.pc = continuation;
 }
 

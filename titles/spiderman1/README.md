@@ -21,6 +21,6 @@ The first discriminator is both-logo completion followed by early `dem1`, with t
 movie body suspended and resumed by the runtime executor. Representative interactive gameplay is
 required before the generator and old corpus are deleted.
 
-The product is hosted: `Spider1Catalog` (built from `title.json`) puts this title in psxport's in-window
-picker, and boot is the host's generic sequence with `Spider1Runtime::bootInit` entering retail main
+The product is hosted: `createCatalog` (built from `title.json`) runs this title under psxport's
+`ProductHost` as a catalog of one, and boot is the host's generic sequence with `Spider1Runtime::bootInit` entering retail main
 after the framework's audited crt0 (`stackBias` -8, crt0 `0x800873CC`).

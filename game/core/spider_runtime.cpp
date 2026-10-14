@@ -10,10 +10,6 @@ std::string_view SpiderRuntime::serial() const {
   return executableIdentity().serial;
 }
 
-const char *SpiderRuntime::discEnvVar() const {
-  return discEnvironment().data();
-}
-
 [[noreturn]] void SpiderRuntime::refuseUnported(std::string_view boundary,
                                                 std::string_view frontier) const {
   lucent::error("boot",

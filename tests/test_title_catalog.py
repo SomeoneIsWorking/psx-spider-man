@@ -43,6 +43,12 @@ def main() -> int:
     assert catalog.by_id("spiderman1").file_size == 749568
     assert catalog.by_id("spiderman2").file_size == 786432
 
+    checks += 2
+    assert catalog.by_id("spiderman1").disc_executable == "SLUS_008.75"
+    assert catalog.by_id("spiderman2").guest_executable == Path(
+        "scratch/assets/spiderman2/SLUS_013.78"
+    )
+
     checks += 1
     expect_refusal(catalog, "TCB = 4\n", "exactly one BOOT")
     checks += 1
@@ -105,6 +111,21 @@ def main() -> int:
             assert "runtimeModules must be true or false" in str(exc)
         else:
             raise AssertionError("string runtimeModules value accepted")
+
+    for disc_executable in ("\\SLUS_013.78;1", "SLUS_008.75", "BIN/"):
+        checks += 1
+        manifest["runtimeModules"] = False
+        manifest["discExecutable"] = disc_executable
+        with tempfile.TemporaryDirectory(dir=ROOT / "scratch") as directory:
+            malformed = Path(directory) / "title.json"
+            malformed.write_text(json.dumps(manifest), encoding="utf-8")
+            try:
+                Title.from_manifest(malformed)
+            except TitleCatalogError as exc:
+                assert "discExecutable" in str(exc)
+            else:
+                raise AssertionError(f"discExecutable {disc_executable!r} accepted")
+    manifest["discExecutable"] = "SLUS_013.78"
 
     checks += 2
     assert catalog.by_id("spiderman1").hosted

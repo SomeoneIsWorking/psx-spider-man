@@ -60,7 +60,7 @@ def main() -> int:
         disc.write_bytes(source_bytes)
         title = replace(
             base,
-            guest_executable=Path("scratch/assets/title/SLUS_008.75"),
+            id="title",
             file_size=len(source_bytes),
             executable_sha256=digest,
         )

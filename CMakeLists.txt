@@ -53,19 +53,15 @@ set(SPIDER1_FRAME_SOURCES
 # Linked into the product: the title runtime returns its policy and registers two overrides.
 set(SPIDER1_WIDESCREEN_SOURCES titles/spiderman1/spider1_widescreen.cpp)
 
-# DEFAULT_EXECUTABLE: a target outside the host catalog boots title.json's guestExecutable by default.
 function(spider_configure_runtime_target TARGET TITLE PREFIX)
-  cmake_parse_arguments(PARSE_ARGV 3 SPIDER "DEFAULT_EXECUTABLE" "" "")
   spider_read_title(${TITLE} ${PREFIX})
-  if(SPIDER_DEFAULT_EXECUTABLE)
-    target_compile_definitions(${TARGET} PRIVATE SPIDER_TITLE_GUEST_EXE="${${PREFIX}_GUESTEXECUTABLE}")
-  endif()
   target_include_directories(${TARGET} PRIVATE game/core "titles/${TITLE}")
   target_compile_definitions(${TARGET} PRIVATE
     SPIDER_TITLE_ID="${${PREFIX}_ID}"
     SPIDER_TITLE_LABEL="${${PREFIX}_LABEL}"
     SPIDER_TITLE_SERIAL="${${PREFIX}_SERIAL}"
     SPIDER_TITLE_DISC_ENV="${${PREFIX}_DISCENV}"
+    SPIDER_TITLE_DISC_EXECUTABLE="${${PREFIX}_DISCEXECUTABLE}"
     SPIDER_TITLE_EXECUTABLE_SIZE=${${PREFIX}_FILESIZE}
     SPIDER_TITLE_EXECUTABLE_SHA256="${${PREFIX}_EXECUTABLESHA256}")
   if(DEFINED ${PREFIX}_HEADER_ENTRY)
@@ -94,7 +90,7 @@ foreach(SPIDER_TITLE IN LISTS SPIDER_TITLES)
     add_executable(enter_electro_port
       ${SPIDER_COMMON_SOURCES} titles/spiderman2/main.cpp titles/spiderman2/enter_electro_port.cpp
       titles/spiderman2/enter_electro_runtime.cpp)
-    spider_configure_runtime_target(enter_electro_port spiderman2 SPIDER2 DEFAULT_EXECUTABLE)
+    spider_configure_runtime_target(enter_electro_port spiderman2 SPIDER2)
   else()
     message(FATAL_ERROR "unknown SPIDER_TITLES entry '${SPIDER_TITLE}'")
   endif()
@@ -221,6 +217,6 @@ if(BUILD_TESTING)
     COMMAND ${Python3_EXECUTABLE} ${PSXPORT_DIR}/tools/check_cpp_style.py
             --root ${CMAKE_SOURCE_DIR} --compile-commands ${CMAKE_BINARY_DIR}
             # Shrink-only caps; lower them whenever the file shrinks.
-            --cap titles/spiderman1/spider1_frame_driver.cpp=440
+            --cap titles/spiderman1/spider1_frame_driver.cpp=437
             --cap titles/spiderman1/spider1_mode_driver.cpp=521)
 endif()
