@@ -10,7 +10,6 @@
 #include "executable_identity.h"
 #include "game.h"
 #include "guest_execution.h"
-#include "machine.h"
 #include "provisioning_root.h"
 #include "title_catalog.h"
 
@@ -77,7 +76,7 @@ int runPort(EnterElectroRuntime &runtime, int argc, char **argv) {
   psxport_install_game(runtime);
 
   auto game = std::make_unique<Game>();
-  psx::Machine{*game}.insertDisc(kTitle);
+  game->disc.env_key = kTitle.discEnvVar;
   Core *core = &game->core;
 
   watchdog_init();
