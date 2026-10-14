@@ -7,7 +7,7 @@ namespace spider::enterelectro {
 class EnterElectroRuntime final : public SpiderRuntime {
 public:
   std::string_view discEnvironment() const override;
-  std::string_view defaultExecutable() const override;
+  std::string_view defaultExecutable() const;
   const ExecutableIdentity &executableIdentity() const override;
   void *createContext(Core &core) override;
   void destroyContext(void *context) override;

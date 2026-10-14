@@ -4,10 +4,10 @@
 #include "spider1_catalog.h"
 
 #include "testutil.h"
-#include "title_selection.h"
+#include "title_availability.h"
 
-#include <filesystem>
 #include <string_view>
+#include <vector>
 
 namespace {
 
@@ -30,13 +30,13 @@ void test_the_catalog_and_the_runtime_share_one_identity() {
 
 void test_a_provisioned_executable_passes_the_hosts_selection() {
   const spider::spider1::Spider1Catalog catalog;
-  const std::filesystem::path executable = SPIDER_TITLE_GUEST_EXE;
-  if (!std::filesystem::exists(executable)) {
+  const std::vector<psx::host::TitleAvailability> titles =
+      psx::host::TitleAvailabilityProbe(catalog.provisioningRoot(), catalog.titles()).probe();
+  CHECK_EQ(titles.size(), 1u);
+  if (titles.front().status == psx::host::AvailabilityStatus::NotProvisioned) {
     return;
   }
-  const psx::host::SelectionResult selection =
-      psx::host::selectExecutableFile(executable, catalog.titles());
-  CHECK_MSG(static_cast<bool>(selection), selection.detail.c_str());
+  CHECK_MSG(titles.front().available(), titles.front().reason.c_str());
 }
 
 } // namespace

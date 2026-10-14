@@ -43,7 +43,7 @@ Statuses: ✅ re-verified · 🟡 re-partial (honest gap) · 🔬 in-progress ·
 - status: re-partial
 - deps: RE-00
 - evidence: psxport now exposes per-Core dispatchGuest/callOriginal, typed exits, image identity, override dispatch, and invalidation; the sole Spider product calls dispatchGuest at authenticated crt0.
-- where: external/psxport/runtime/cpu; game/core/guest_execution.*; game/core/spider_port.cpp
+- where: external/psxport/runtime/cpu; game/core/guest_execution.*; titles/spiderman2/enter_electro_port.cpp
 - gap: The exact maintained Lightrec backend is linked and its Linux x86-64 synthetic runtime contract proves nonzero translated blocks. Prove the same denominator on an authenticated Spider image, with classified bounded fallback and no selectable interpreter mode.
 - notes: Lightrec owns translation/cache memory; psxport owns Core synchronization, bounded exits, runtime dispatch, original calls, and invalidation.
 

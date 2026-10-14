@@ -28,10 +28,10 @@ respectively in `docs/project-goals.md`, `docs/project-state.md`, `docs/codemap.
 ## How the product starts
 
 Spider-Man 1 composes psxport's `psx::host::ProductHost` over `Spider1Catalog` (`titles/spiderman1/spider1_catalog.*`,
-identity from `titles/spiderman1/title.json`): zero arguments open the title picker, `pick spiderman1` boots it,
-and `session return` comes back. Boot is the host's generic `TitleSession` sequence; the title's own steps are
+identity from `titles/spiderman1/title.json`) through the framework main; a catalog of one has no picker, so zero
+arguments boot the provisioned executable directly. Boot is the host's generic `TitleSession` sequence; the title's own steps are
 `Spider1Runtime` hooks (`discEnvVar`, `registerOverrides`, `bootInit`) and `Spider1FrameDriver::stepFrame`.
-Enter Electro still starts through `spider::runPort` until it joins the catalog.
+Enter Electro still starts through `spider::enterelectro::runPort` until it joins the catalog.
 
 ## Spider-Man first discriminator
 

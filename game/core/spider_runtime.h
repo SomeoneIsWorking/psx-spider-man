@@ -12,7 +12,6 @@ class SpiderRuntime : public GameRuntime {
 public:
   std::string_view serial() const;
   virtual std::string_view discEnvironment() const = 0;
-  virtual std::string_view defaultExecutable() const = 0;
   virtual const ExecutableIdentity &executableIdentity() const = 0;
   const char *discEnvVar() const final;
 
