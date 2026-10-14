@@ -31,7 +31,6 @@ include(cmake/title_manifest.cmake)
 set(SPIDER_COMMON_SOURCES
   game/core/executable_identity.cpp
   game/core/guest_execution.cpp
-  game/core/spider_port.cpp
   game/core/spider_runtime.cpp)
 
 set(SPIDER1_FRAME_SOURCES
@@ -54,16 +53,19 @@ set(SPIDER1_FRAME_SOURCES
 # Linked into the product: the title runtime returns its policy and registers two overrides.
 set(SPIDER1_WIDESCREEN_SOURCES titles/spiderman1/spider1_widescreen.cpp)
 
-function(spider_add_runtime_target TARGET TITLE PREFIX MAIN RUNTIME)
+# DEFAULT_EXECUTABLE: a target outside the host catalog boots title.json's guestExecutable by default.
+function(spider_configure_runtime_target TARGET TITLE PREFIX)
+  cmake_parse_arguments(PARSE_ARGV 3 SPIDER "DEFAULT_EXECUTABLE" "" "")
   spider_read_title(${TITLE} ${PREFIX})
-  add_executable(${TARGET} ${SPIDER_COMMON_SOURCES} ${MAIN} ${RUNTIME})
+  if(SPIDER_DEFAULT_EXECUTABLE)
+    target_compile_definitions(${TARGET} PRIVATE SPIDER_TITLE_GUEST_EXE="${${PREFIX}_GUESTEXECUTABLE}")
+  endif()
   target_include_directories(${TARGET} PRIVATE game/core "titles/${TITLE}")
   target_compile_definitions(${TARGET} PRIVATE
     SPIDER_TITLE_ID="${${PREFIX}_ID}"
     SPIDER_TITLE_LABEL="${${PREFIX}_LABEL}"
     SPIDER_TITLE_SERIAL="${${PREFIX}_SERIAL}"
     SPIDER_TITLE_DISC_ENV="${${PREFIX}_DISCENV}"
-    SPIDER_TITLE_GUEST_EXE="${${PREFIX}_GUESTEXECUTABLE}"
     SPIDER_TITLE_EXECUTABLE_SIZE=${${PREFIX}_FILESIZE}
     SPIDER_TITLE_EXECUTABLE_SHA256="${${PREFIX}_EXECUTABLESHA256}")
   if(DEFINED ${PREFIX}_HEADER_ENTRY)
@@ -82,15 +84,17 @@ endfunction()
 set(SPIDER_TITLES "spiderman1" CACHE STRING "Spider title targets to configure")
 foreach(SPIDER_TITLE IN LISTS SPIDER_TITLES)
   if(SPIDER_TITLE STREQUAL "spiderman1")
-    spider_add_runtime_target(
-      spiderman_port spiderman1 SPIDER1
-      game/core/main.cpp titles/spiderman1/spider1_runtime.cpp)
-    target_sources(spiderman_port PRIVATE
-      ${SPIDER1_FRAME_SOURCES} ${SPIDER1_WIDESCREEN_SOURCES} titles/spiderman1/spider1_catalog.cpp)
+    psxport_add_product(spiderman_port
+      CATALOG spider::spider1::createCatalog
+      HEADER spider1_catalog.h
+      SOURCES ${SPIDER_COMMON_SOURCES} titles/spiderman1/spider1_runtime.cpp
+              ${SPIDER1_FRAME_SOURCES} ${SPIDER1_WIDESCREEN_SOURCES} titles/spiderman1/spider1_catalog.cpp)
+    spider_configure_runtime_target(spiderman_port spiderman1 SPIDER1)
   elseif(SPIDER_TITLE STREQUAL "spiderman2")
-    spider_add_runtime_target(
-      enter_electro_port spiderman2 SPIDER2
-      titles/spiderman2/main.cpp titles/spiderman2/enter_electro_runtime.cpp)
+    add_executable(enter_electro_port
+      ${SPIDER_COMMON_SOURCES} titles/spiderman2/main.cpp titles/spiderman2/enter_electro_port.cpp
+      titles/spiderman2/enter_electro_runtime.cpp)
+    spider_configure_runtime_target(enter_electro_port spiderman2 SPIDER2 DEFAULT_EXECUTABLE)
   else()
     message(FATAL_ERROR "unknown SPIDER_TITLES entry '${SPIDER_TITLE}'")
   endif()
@@ -193,18 +197,18 @@ if(BUILD_TESTING)
   target_link_libraries(cd_irq2_delivery_test PRIVATE psxport)
   add_test(NAME cd_irq2_delivery COMMAND cd_irq2_delivery_test)
   if(TARGET spiderman_port)
-    spider_add_runtime_target(
-      spider1_runtime_services_test spiderman1 SPIDER1
-      tests/spider1_runtime_services_test.cpp titles/spiderman1/spider1_runtime.cpp)
+    add_executable(spider1_runtime_services_test
+      ${SPIDER_COMMON_SOURCES} tests/spider1_runtime_services_test.cpp titles/spiderman1/spider1_runtime.cpp)
+    spider_configure_runtime_target(spider1_runtime_services_test spiderman1 SPIDER1)
     target_sources(spider1_runtime_services_test PRIVATE
       ${SPIDER1_FRAME_SOURCES} ${SPIDER1_WIDESCREEN_SOURCES})
     target_include_directories(spider1_runtime_services_test PRIVATE ${PSXPORT_DIR}/tests)
     add_test(NAME spider1_runtime_services COMMAND spider1_runtime_services_test)
     set_tests_properties(spider1_runtime_services PROPERTIES ENVIRONMENT
       "PSXPORT_NOWINDOW=1;PSXPORT_NOAUDIO=1;PSXPORT_NOPACE=1;PSXPORT_ASSET_DIR=${PSXPORT_DIR}")
-    spider_add_runtime_target(
-      spider1_catalog_test spiderman1 SPIDER1
-      tests/spider1_catalog_test.cpp titles/spiderman1/spider1_runtime.cpp)
+    add_executable(spider1_catalog_test
+      ${SPIDER_COMMON_SOURCES} tests/spider1_catalog_test.cpp titles/spiderman1/spider1_runtime.cpp)
+    spider_configure_runtime_target(spider1_catalog_test spiderman1 SPIDER1)
     target_sources(spider1_catalog_test PRIVATE
       ${SPIDER1_FRAME_SOURCES} ${SPIDER1_WIDESCREEN_SOURCES} titles/spiderman1/spider1_catalog.cpp)
     target_include_directories(spider1_catalog_test PRIVATE ${PSXPORT_DIR}/tests)

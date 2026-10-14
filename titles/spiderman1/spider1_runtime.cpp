@@ -21,10 +21,6 @@ std::string_view Spider1Runtime::discEnvironment() const {
   return SPIDER_TITLE_DISC_ENV;
 }
 
-std::string_view Spider1Runtime::defaultExecutable() const {
-  return SPIDER_TITLE_GUEST_EXE;
-}
-
 const ExecutableIdentity &Spider1Runtime::executableIdentity() const {
   return identity_;
 }

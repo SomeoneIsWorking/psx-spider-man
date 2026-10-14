@@ -29,6 +29,10 @@ std::string_view Spider1Catalog::productName() const {
   return "Spider-Man";
 }
 
+std::filesystem::path Spider1Catalog::provisioningRoot() const {
+  return "scratch/assets";
+}
+
 std::span<const psx::host::TitleIdentity> Spider1Catalog::titles() const {
   return kIdentities;
 }
@@ -39,6 +43,10 @@ Spider1Runtime &Spider1Catalog::runtime(std::size_t index) const {
     std::abort();
   }
   return runtime_;
+}
+
+std::unique_ptr<psx::host::TitleCatalog> createCatalog() {
+  return std::make_unique<Spider1Catalog>();
 }
 
 } // namespace spider::spider1

@@ -1,4 +1,4 @@
-#include "spider_port.h"
+#include "enter_electro_port.h"
 #include "dbg_server.h"
 #include "field_turn.h"
 #include "hw_bind.h"
@@ -6,10 +6,10 @@
 #include "store_observe.h"
 
 #include "core.h"
+#include "enter_electro_runtime.h"
 #include "executable_identity.h"
 #include "game.h"
 #include "guest_execution.h"
-#include "spider_runtime.h"
 
 #include <lucent/log.h>
 #include <memory>
@@ -22,7 +22,7 @@ void spu_init(void);
 void watchdog_init(void);
 }
 
-namespace spider {
+namespace spider::enterelectro {
 
 namespace {
 
@@ -31,9 +31,9 @@ bool isHelpArgument(int argc, char **argv) {
          (std::string_view(argv[1]) == "-h" || std::string_view(argv[1]) == "--help");
 }
 
-void printUsage(const char *program, const SpiderRuntime &runtime) {
+void printUsage(const char *program, const EnterElectroRuntime &runtime) {
   lucent::info(
-      "boot", "Usage: {} [guest-executable]", program && *program ? program : "spiderman_port");
+      "boot", "Usage: {} [guest-executable]", program && *program ? program : "enter_electro_port");
   lucent::info("boot",
                "Run the {} native port with an authenticated extracted PS-X executable.",
                runtime.serial());
@@ -44,7 +44,7 @@ void printUsage(const char *program, const SpiderRuntime &runtime) {
 
 } // namespace
 
-int runPort(SpiderRuntime &runtime, int argc, char **argv) {
+int runPort(EnterElectroRuntime &runtime, int argc, char **argv) {
   // Help must work in a fresh checkout, before extraction, identity checks or framework setup.
   if (isHelpArgument(argc, argv)) {
     printUsage(argv[0], runtime);
@@ -103,4 +103,4 @@ int runPort(SpiderRuntime &runtime, int argc, char **argv) {
   return reportExecutionResult(*core, result, runtime.serial()) ? 0 : 3;
 }
 
-} // namespace spider
+} // namespace spider::enterelectro

@@ -42,14 +42,6 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           submodules: recursive
-      - name: Check out the exact shared policy tools
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: SomeoneIsWorking/re-harness
-          ref: 121ec25c31577188f8c45e605c36a13bb9da8c9f
-          path: external/re-harness
-          fetch-depth: 0
-          persist-credentials: false
       - name: Select Python 3.13
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:

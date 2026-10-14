@@ -27,7 +27,7 @@ run.sh -> bootstrap.py -> tools/run.py
                             |
                             +-- title catalog -> authenticated PS-X EXE (no guest body emitted)
                                     |
-game/core/main.cpp -> psx::host::ProductHost over Spider1Catalog (external/psxport/docs/title-host.md)
+framework main (psxport_add_product) -> psx::host::ProductHost over Spider1Catalog (external/psxport/docs/title-host.md)
                                     |
               psx::host::TitleSession: generic boot, then one FrameLoopShell step per host frame
                                     |
@@ -37,9 +37,11 @@ game/core/main.cpp -> psx::host::ProductHost over Spider1Catalog (external/psxpo
                             Spider1Runtime::resumeBootstrapBoundary services it as one field
 ```
 
-Spider-Man 1 is hosted: zero arguments open the in-window picker, one executable argument runs that
-serial-identified executable (`tools/run.py` passes none for a title whose manifest says `hosted`).
-`spider::runPort` is Enter Electro's process spine only (`titles/spiderman2/main.cpp`), until that
+Spider-Man 1 is hosted and its entry is the framework main: `createCatalog()` names `Spider1Catalog`,
+a catalog of one, so zero arguments boot `scratch/assets/<slug>/<serial>` without a picker and one
+executable argument runs that serial-identified executable (`tools/run.py` passes none for a title
+whose manifest says `hosted`).
+`spider::enterelectro::runPort` (`titles/spiderman2/enter_electro_port.cpp`) is Enter Electro's process spine only, until that
 title joins the catalog (EE-02). `Spider1Runtime` holds the authenticated image, the platform-HLE
 plan, the widescreen owner and the CD-stream service; `Spider1FrameDriver` owns cadence and field
 delivery. `Spider1ModeDriver` and the host-stepped fiber are not reached from the product: nothing
@@ -51,8 +53,7 @@ calls `runBootPrefix`, so they wait for the native frame owner that issue 0021 d
 
 | File | Class / function | Responsibility |
 |---|---|---|
-| `main.cpp` | `main` | composes `psx::host::ProductHost` over `Spider1Catalog`; `-h`/`--help` and the one-executable override. Composition only. |
-| `spider_port.{h,cpp}` | `spider::runPort` | Enter Electro's process boot (`titles/spiderman2/main.cpp`): devices in measured order, render path install, control channel and crt0, until that title joins the host catalog |
+| — | `psxport_add_product` | entry is the framework main: `spiderman_port` runs `spider::spider1::createCatalog()` through `psx::host::ProductHost`, which owns `-h`/`--help` and the one-executable override |
 | `spider_runtime.{h,cpp}` | `SpiderRuntime` | the address-free lineage seam: serial, disc key (`discEnvVar`) and refusal wording both titles share. Owns no guest address. |
 | `executable_identity.{h,cpp}` | `ExecutableIdentity`, `ExecutableIdentityStatus`, `verifyExecutable`, `verifyExecutableFile` | shipping serial, size, magic and SHA-256 authentication of the player's executable |
 | `guest_execution.{h,cpp}` | `GuestExecution`, `reportExecutionResult` | one `Core`'s entry into, resumption at, and scoped original call through psxport's executor |
@@ -110,6 +111,7 @@ Compiled as `spider_render_contracts`; nothing in the product links these yet (s
 | File | Class / function | Responsibility |
 |---|---|---|
 | `main.cpp` | `main` | composition only |
+| `enter_electro_port.{h,cpp}` | `runPort` | Enter Electro's process boot: default executable, devices in measured order, render path install, control channel and crt0, until that title joins the host catalog |
 | `enter_electro_runtime.{h,cpp}` | `EnterElectroRuntime` | the measured `SLUS_013.78` image policy and the capability refusal that keeps its render path off until its own owners exist |
 
 ### `tests/` — CTest registrations in `CMakeLists.txt`
@@ -180,7 +182,7 @@ Hermetic contract and ownership tests: `spider1_mode_rules`, `spider1_mode_trans
 
 | Hop | Owner | What it decides |
 | --- | --- | --- |
-| The control channel | framework `DbgServer` (`runtime/psx/debug/`), attached by the host's `TitleSession::boot` (Enter Electro: `runPort`) | pause/step/`guest`/quit, always on loopback, plus the picker's `picker`, `pick <slug>`, `select` and `session return` |
+| The control channel | framework `DbgServer` (`runtime/psx/debug/`), attached by the host's `TitleSession::boot` (Enter Electro: `enterelectro::runPort`) | pause/step/`guest`/quit, always on loopback, plus the picker's `picker`, `pick <slug>`, `select` and `session return` |
 | Environment knobs | the framework's configuration owner, read once at boot | `PSXPORT_DEBUG`, the control port, the asset directory. No title file reads the environment. |
 | Title debug knobs | none; the title has no dev-only selector | the guest's own paths are the debug options |
 
