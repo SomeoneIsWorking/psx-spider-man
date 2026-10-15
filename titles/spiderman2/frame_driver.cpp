@@ -50,7 +50,7 @@ void FrameDriver::stepFrame(Core &core, uint32_t frame) {
   if (!fieldPassed) {
     lucent::error("frame", "Spider-Man 2 guest turn {} cannot continue", frame);
     reportExecutionResult(core, result, "Spider-Man 2");
-    game_.presentation.commitUnpresented(&core);
+    game_.presentation.commitUnpresented();
     game_.run.requestEnd();
     return;
   }

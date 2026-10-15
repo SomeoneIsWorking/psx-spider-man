@@ -103,5 +103,5 @@ int main() {
   RUN(field_clock_measures_since_the_previous_field);
   RUN(field_clock_rebases_only_after_the_value_was_read);
   RUN(cd_initialization_installs_every_callback_slot);
-  return pt_summary();
+  return psx::test::summary();
 }

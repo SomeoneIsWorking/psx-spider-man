@@ -36,12 +36,6 @@ title's own rows name `titles/<title>/`.
 | 1 | psxport F-CD.1 | `titles/spiderman1/runtime.cpp:Runtime` — stock `CdRead`, `CdReadSync`, `CD_cw`, `CdSync`, work area `0x800B3B2C`/`30` |
 | 2 | psxport F-CD.3 | `titles/spiderman1/runtime.cpp:Runtime::stockCdReadLanded` — overlay code read into heap 1 (`overlayHeapArena`) |
 
-## F-RENDER
-
-| hop | joins | owner |
-|---|---|---|
-| 1 | psxport F-RENDER.1 | `game/runtime/runtime.cpp:Runtime::renderCapabilities` — Record, no producers, guest VRAM is not the picture |
-
 ## F-WIDE
 
 | hop | joins | owner |

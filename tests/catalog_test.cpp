@@ -34,13 +34,11 @@ void test_each_entry_names_its_titles_runtime() {
   CHECK(dynamic_cast<spider::enterelectro::Runtime *>(&catalog->runtime(1)) != nullptr);
 }
 
-// Both titles present the guest's GP0 record, and the aspect policy gives Record its 16:9 canvas.
-void test_both_titles_present_on_record_with_a_widescreen_canvas() {
+// Both titles own a widescreen projection policy and no interpolation.
+void test_both_titles_own_a_widescreen_projection_without_interpolation() {
   const std::unique_ptr<psx::host::TitleCatalog> catalog = spider::createCatalog();
   for (std::size_t index = 0; index < catalog->titles().size(); ++index) {
     const psx::game::GameRuntime &runtime = catalog->runtime(index);
-    CHECK(runtime.renderCapabilities().defaultPath == RenderPath::Record);
-    CHECK(!runtime.renderCapabilities().nativeRenderPath);
     CHECK(runtime.guestWidescreenProjection() != nullptr);
     CHECK(!runtime.interpolates());
   }
@@ -63,7 +61,7 @@ void test_a_provisioned_executable_passes_the_hosts_selection() {
 int main() {
   RUN(the_catalog_lists_both_titles_in_order);
   RUN(each_entry_names_its_titles_runtime);
-  RUN(both_titles_present_on_record_with_a_widescreen_canvas);
+  RUN(both_titles_own_a_widescreen_projection_without_interpolation);
   RUN(a_provisioned_executable_passes_the_hosts_selection);
-  return pt_summary();
+  return psx::test::summary();
 }

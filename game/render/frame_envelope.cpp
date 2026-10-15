@@ -2,7 +2,7 @@
 #include "core.h"
 #include "game.h"
 #include "gpu_env.h"
-#include "gpu_native_internal.h" // gpu_gp0 / gpu_gp1 — the framework's GPU command entry points
+#include "gpu_ports.h"
 #include <lucent/log.h>
 
 namespace spider::render {
@@ -28,11 +28,11 @@ void FrameEnvelope::produce(Core *c, const DrawEnv &draw, const DispEnv &disp) {
 #else
 
   // PutDispEnv. GP1(05) is issued on every call and flips the scanned-out page (VRAM y=0/256).
-  gpu_gp1(c, disp.displayStartWord());
+  psx::gpu::gp1Write(*c, disp.displayStartWord());
   // GP1(08)/GP1(07) are issued only when the DISPENV geometry changed.
   if (!disp.sameGeometryAs(mLastDisp)) {
-    gpu_gp1(c, disp.displayModeWord(c));
-    gpu_gp1(c, disp.verticalRangeWord(c));
+    psx::gpu::gp1Write(*c, disp.displayModeWord(c));
+    psx::gpu::gp1Write(*c, disp.verticalRangeWord(c));
     mLastDisp = disp;
     lucent::debug("envelope",
                   "display geometry programmed: disp=({},{} {}x{}) screen=({},{} {}x{}) "
@@ -52,18 +52,18 @@ void FrameEnvelope::produce(Core *c, const DrawEnv &draw, const DispEnv &disp) {
   }
 
   // PutDrawEnv: six state words in FUN_80082770's order (DR_ENV +0x04 upward).
-  gpu_gp0(c, draw.areaTopLeftWord(c));
-  gpu_gp0(c, draw.areaBottomRightWord(c));
-  gpu_gp0(c, draw.drawOffsetWord());
-  gpu_gp0(c, draw.drawModeWord());
-  gpu_gp0(c, draw.textureWindowWord());
-  gpu_gp0(c, DrawEnv::maskWord());
+  psx::gpu::gp0Write(*c, draw.areaTopLeftWord(c));
+  psx::gpu::gp0Write(*c, draw.areaBottomRightWord(c));
+  psx::gpu::gp0Write(*c, draw.drawOffsetWord());
+  psx::gpu::gp0Write(*c, draw.drawModeWord());
+  psx::gpu::gp0Write(*c, draw.textureWindowWord());
+  psx::gpu::gp0Write(*c, DrawEnv::maskWord());
 
   // Then the clear, the only part that puts colour on screen.
   uint32_t bg[3];
   const int nbg = draw.backgroundClearWords(c, bg);
   for (int i = 0; i < nbg; ++i) {
-    gpu_gp0(c, bg[i]);
+    psx::gpu::gp0Write(*c, bg[i]);
   }
   if (nbg) {
     ++mClears;

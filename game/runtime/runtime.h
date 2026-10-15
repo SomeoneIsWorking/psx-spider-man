@@ -14,8 +14,6 @@ public:
   void registerOverrides(Game &game) override;
   void deliverPad(Core &core, const psx::input::PadDelivery &delivery) override;
   const GuestWidescreenProjection *guestWidescreenProjection() const override;
-  RenderCapabilities renderCapabilities() const override;
-  bool guestVramIsPicture(const Game &game) const override;
 
 protected:
   Runtime(const psx::hle::StockVSync &vsync, const psx::input::StockPadBuffers::Layout &pad);

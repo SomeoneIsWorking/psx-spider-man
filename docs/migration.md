@@ -31,7 +31,7 @@ scoped original calls, and invalidation. Spider title code owns only measured ti
 behavior.
 
 The consumer boundary is the workspace's live PSXPort checkout (`external/psxport`, established by
-`tools/psxport_fetch.py`) with its required Lightrec runtime ABI at
+psxport's `tools/psxport_fetch.py`) with its required Lightrec runtime ABI at
 `b1457137c31cedff5f440d59da29401d021ba2da`. The hosted checkout and the CMake dependency refusal must
 move together; a different or dirty dependency is not compatible evidence.
 
