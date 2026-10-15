@@ -1,6 +1,10 @@
 # 0027 — a mode whose object allocation returns zero writes into guest address 0x0B
 
-**Status:** open, not fixed. This is a readability finding: the refactor that named these objects made
+**Status:** resolved 2026-10-15 by the owners' removal: `Spider1MenuMode`, `Spider1AlternateMode` and
+`Spider1ModeDriver` were deleted unreached, and the retail modes run unchanged through Lightrec. The text
+below is the history.
+
+**Was:** open, not fixed. This is a readability finding: the refactor that named these objects made
 the defect visible, and fixing it would have been a behaviour change inside a change whose whole point
 was that it changes nothing.
 

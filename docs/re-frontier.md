@@ -1,14 +1,12 @@
-# RE Frontier — the ordered RE dependency chain toward a faithful BL2
+# RE Frontier — the ordered RE dependency chain toward a faithful Spider-Man port
 
-Tracked by `tools/re_frontier.py` (consult it FIRST; update it in the SAME commit
-that changes a step). This is the fine-grained companion to `docs/codemap.md`:
+Update a step in the same commit that changes it. This is the fine-grained companion to `docs/codemap.md`:
 the codemap says *what subsystem exists*, this says *which ordered RE step is
 real reverse-engineering vs a hack that jumped ahead*.
 
 **Hard rule (no hacks / no behavior fallbacks):** a `⛔ hack` status is DEBT, never an
 acceptable resting state. It marks a shortcut standing in for absent RE and MUST
-be removed as its real mechanism lands. `re_frontier.py hacks` is the debt list;
-`re_frontier.py next` tells you the next RE-ready step. This does not prohibit the
+be removed as its real mechanism lands. This does not prohibit the
 dynamic executor's classified, bounded automatic block fallback after a JIT refusal; that is CPU
 backend policy, not a substitute game implementation or selectable gameplay mode.
 
@@ -26,8 +24,7 @@ unless the fallback IS intended behavior of the real target being reproduced.
 Statuses: ✅ re-verified · 🟡 re-partial (honest gap) · 🔬 in-progress ·
 ⛔ hack (debt, must remove) · ⬜ todo · ➖ skip-by-design · ⏸ blocked (computed).
 
-<!-- Machine-edited by tools/re_frontier.py add/set. Format: `## <area>` sections;
-     each entry is `### <id> — <title>` followed by `- <field>: <value>` lines. -->
+<!-- Format: `## <area>` sections; each entry is `### <id> — <title>` followed by `- <field>: <value>` lines. -->
 
 ## Frontier
 
@@ -43,7 +40,7 @@ Statuses: ✅ re-verified · 🟡 re-partial (honest gap) · 🔬 in-progress ·
 - status: re-partial
 - deps: RE-00
 - evidence: psxport now exposes per-Core dispatchGuest/callOriginal, typed exits, image identity, override dispatch, and invalidation; the sole Spider product calls dispatchGuest at authenticated crt0.
-- where: external/psxport/runtime/cpu; game/core/guest_execution.*; titles/spiderman2/enter_electro_frame_driver.cpp
+- where: external/psxport/runtime/cpu; game/execution/guest_execution.*; titles/spiderman2/frame_driver.cpp
 - gap: The exact maintained Lightrec backend is linked and its Linux x86-64 synthetic runtime contract proves nonzero translated blocks. Prove the same denominator on an authenticated Spider image, with classified bounded fallback and no selectable interpreter mode.
 - notes: Lightrec owns translation/cache memory; psxport owns Core synchronization, bounded exits, runtime dispatch, original calls, and invalidation.
 
@@ -51,7 +48,7 @@ Statuses: ✅ re-verified · 🟡 re-partial (honest gap) · 🔬 in-progress ·
 - status: re-partial
 - deps: DYN-00, RE-09
 - evidence: RE-09 proves that CD.WAD modules coexist at guest-allocated bases, so address-only cache and override keys are insufficient.
-- where: external/psxport/runtime/cpu/native_dispatch.*; game/core/guest_execution.*; titles/spiderman1/spider1_movie_execution.*
+- where: external/psxport/runtime/cpu/native_dispatch.*; game/execution/guest_execution.*; titles/spiderman1/frame_driver.*
 - gap: Generated-symbol registration is removed and scoped-original wiring exists. Prove a native override plus positive/negative invalidation across live executable/module generations.
 - notes:
 
@@ -59,8 +56,8 @@ Statuses: ✅ re-verified · 🟡 re-partial (honest gap) · 🔬 in-progress ·
 - status: re-partial
 - deps: DYN-01, RE-04, RE-22
 - evidence: The retired product completed both logo movies and reached dem1. FUN_8002AA0C reaches libetc VSync from 0x8002AC8C, 0x8002AE1C, and 0x8002AFEC; issue 0021 preserves the observed cadence and ordering failures.
-- where: titles/spiderman1/spider1_movie_execution.*; titles/spiderman1/spider1_frame_driver.*
-- gap: The generated movie body is absent and the retail callOriginal boundary exists; run nonzero Lightrec blocks, complete both logos, and reach early dem1 with typed exits.
+- where: titles/spiderman1/frame_driver.*
+- gap: The retail movie body runs unchanged through Lightrec and `spider1::FrameDriver` services its three VSync(0) stops as display fields; both logos complete and dem1 is reached (S002). The run's translation and fallback denominators are not recorded here.
 - notes: This is the first implementation discriminator, not representative gameplay evidence.
 
 ### DYN-03 — Representative gameplay conformance
@@ -252,8 +249,9 @@ Statuses: ✅ re-verified · 🟡 re-partial (honest gap) · 🔬 in-progress ·
 **Preserved widescreen evidence:** `FUN_80075D0C` owns the active `u16` viewport descriptor:
 [0..3] horizontal/vertical bounds, [6] lens divisor, output [7]=H and [8..9]=OFX/OFY. A historical
 real-disc run held one stable `512x240 -> 684x240` and lens `2365 -> 3159` mapping through `dem1`.
-The old guest-call attachment is removed. `Spider1Widescreen` retains only the pure aspect policy
-until a new image-aware boundary is attached and verified through the dynamic product.
+The title's projection owner is deleted: both titles present on Record with the stock aspect policy,
+and the outcode pass `FUN_8007C2AC` compares zero-extended bounds, so the left margin stays culled
+(issue 0034).
 
 ### RE-19 — The guest's frame driver and the engine's render seam (beginFrame / submitFrame)
 - status: re-verified
@@ -273,7 +271,7 @@ until a new image-aware boundary is attached and verified through the dynamic pr
 
 **Preserved frame-fence evidence:** historical execution showed that the unified queue needs exactly
 one frame commit after each complete retail `FUN_80061308` boundary. The compile-checked
-`Spider1FrameDriver` retains that phase model, but it is not attached to the current product and has
+`spider1::FrameDriver` retains that phase model, but it is not attached to the current product and has
 not run around Lightrec.
 
 ### RE-21 — Render-walk inventory: what a native producer has to reproduce (FUN_8002BD5C)
@@ -423,9 +421,9 @@ fault proves no causal relationship between those events.
 ### RE-22 — Own the frame loop around resumable guest execution
 - status: re-partial
 - deps: RE-19, RE-21
-- evidence: NATIVE-OWNER IMPLEMENTATION 2026-08-27 (C056), now compile-checked behind the dynamic guest-execution boundary. Historical execution established that `Spider1FrameDriver` installs the exact 72-byte persistent main frame and owns field/audio/pad/presentation service. `Spider1ModeDriver` owns the authenticated ten-entry selector table at 0x80093C3C and finite state for FUN_8002C174, FUN_800604CC, FUN_800160EC, and FUN_8006F294. It preserves retail phase order, splits FUN_800604CC's two submissions across two host steps, paces held-image countdown fields without rotating interpolation history, and maps every step to exactly one submitted, repeated-field, or measured unpresented fence. Authenticated RAM bytes at 0x80093C3C are `58c50280 7cc40280 f8c50280 9cc50280 9cc50280 00c50280 78c50280 e4c40280 7cc40280 74c50280`. The historical run visibly completed both logo movies, the exact 300-field post-logo input wait, and entered `dem1`; Lightrec has not re-verified that behavior.
-- where: `titles/spiderman1/spider1_frame_driver.*`, `titles/spiderman1/spider1_mode_driver.*`, `titles/spiderman1/spider1_runtime.*`; guest FUN_8002C354, FUN_8002C174, FUN_800604CC, FUN_800160EC, FUN_8006F294.
-- gap: The native owners compile against the dynamic APIs but are not attached and have not run around Lightrec. `Spider1MovieExecution` now expresses the unchanged retail movie body through scoped original execution; prove suspension/resumption at the three authenticated exits through `dem1`. Every finite mode transition and representative gameplay remain unverified. Enter Electro needs its own addresses and driver. **CADENCE CONSEQUENCE, measured 2026-09-29 (`docs/issues/0031`):** owning the loop this way makes the guest's own per-frame field count UNOBSERVABLE, so the title's retail frame rate cannot be read off this build. `0x8005E748` (the guest's field wait) and `0x8002C354` are native overrides and `0x8002C174` is referenced nowhere in the title tree; the product's own `pacer` channel therefore declares `quota=1 parts=1 rate=59940mHz` 57 times of 57, and the measured 1.0000 fields per presented frame at 59.71 presents/second is THAT declaration, not the guest's cadence. Closing this gap requires either `0x8002C174` executing as translated guest code or `0x8005E748` being served as a poll on the guest's own counter; both are named in `docs/issues/0031` §7 and both are blocked on the black-picture frontier.
+- evidence: NATIVE-OWNER IMPLEMENTATION 2026-08-27 (C056), now compile-checked behind the dynamic guest-execution boundary. Historical execution established that `Spider1FrameDriver` installed the exact 72-byte persistent main frame and owned field/audio/pad/presentation service. `Spider1ModeDriver` owned the authenticated ten-entry selector table at 0x80093C3C and finite state for FUN_8002C174, FUN_800604CC, FUN_800160EC, and FUN_8006F294. It preserves retail phase order, splits FUN_800604CC's two submissions across two host steps, paces held-image countdown fields without rotating interpolation history, and maps every step to exactly one submitted, repeated-field, or measured unpresented fence. Authenticated RAM bytes at 0x80093C3C are `58c50280 7cc40280 f8c50280 9cc50280 9cc50280 00c50280 78c50280 e4c40280 7cc40280 74c50280`. The historical run visibly completed both logo movies, the exact 300-field post-logo input wait, and entered `dem1`; Lightrec has not re-verified that behavior.
+- where: `titles/spiderman1/frame_driver.*`, `titles/spiderman1/level_warp.*`, `titles/spiderman1/runtime.*`; guest FUN_8002C354, FUN_8002C174, FUN_800604CC, FUN_800160EC, FUN_8006F294.
+- gap: 2026-10-15: `Spider1ModeDriver`, its fiber and `Spider1MovieExecution` were deleted unreached; retail main, its outer selector and every mode loop run unchanged through Lightrec, and the frame driver owns only the turn boundaries. `warp <level>` (`spider1::LevelWarp`) raises the selector-3 level exit from FUN_8002C174's field wait and reaches player-controlled `l1a2_t`. Every finite mode transition and representative gameplay remain unverified. Enter Electro needs its own addresses and driver. **CADENCE CONSEQUENCE, measured 2026-09-29 (`docs/issues/0031`):** owning the loop this way makes the guest's own per-frame field count UNOBSERVABLE, so the title's retail frame rate cannot be read off this build. `0x8005E748` (the guest's field wait) and `0x8002C354` are native overrides and `0x8002C174` is referenced nowhere in the title tree; the product's own `pacer` channel therefore declares `quota=1 parts=1 rate=59940mHz` 57 times of 57, and the measured 1.0000 fields per presented frame at 59.71 presents/second is THAT declaration, not the guest's cadence. Closing this gap requires either `0x8002C174` executing as translated guest code or `0x8005E748` being served as a poll on the guest's own counter; both are named in `docs/issues/0031` §7 and both are blocked on the black-picture frontier.
 - notes: VSync 0x80084BE0 remains the protected all-mode abort. The retired generated movie body and generator are absent.
 
 ### RE-23 — Scene identity: the game's own level-name lens (0x800A568C / FUN_8005A734)
@@ -454,15 +452,15 @@ fault proves no causal relationship between those events.
 - status: re-verified
 - deps: EE-00
 - evidence: Independent crt0 extraction over the real USA SLUS_013.78 resolves BSS 0x800C2AF4..0x800CF0DC, stack globals 0x800C0D10/0x800C0D0C with bias -8, heap 0x800CF0DC, gp 0x800C1764, libcInit 0x800988B0, and first game call 0x80031F54. No port code holds them: the FrameDriver enters the retail crt0, which sets BSS, stack, heap and gp itself.
-- where: authenticated guest crt0 0x80093C68; crt0Entry in titles/spiderman2/enter_electro_guest_facts.h
+- where: authenticated guest crt0 0x80093C68, the header entry admission leaves in pc; titles/spiderman2/frame_driver.*
 - gap:
 - notes: No Spider-Man 1 title address or title context is bound.
 
 ### EE-02 — Enter Electro first game-owned call
 - status: re-verified
 - deps: EE-01, DYN-03
-- evidence: crt0 jal 0x80031F54 at 0x80093D04. With bootEntry DriverOwned the FrameDriver enters crt0 and the guest runs main 0x80031F54 -> FUN_800773E8 (CdInit 0x8006FB44, Marvel logo, STR player 0x8003035C) through Lightrec with no title override but submitFrame. The old hang was runPort resuming every budget exit without a presentation fence or display field, so the first libetc VBlank wait (FUN_800976E4 under CdInit) never returned; a 600-step headless run now ends at the cap with 600 fences.
-- where: titles/spiderman2/enter_electro_frame_driver.cpp; guest FUN_80031F54
+- evidence: crt0 jal 0x80031F54 at 0x80093D04. The FrameDriver enters crt0 and the guest runs main 0x80031F54 -> FUN_800773E8 (CdInit 0x8006FB44, Marvel logo, STR player 0x8003035C) through Lightrec with no title override but submitFrame. The old hang was runPort resuming every budget exit without a presentation fence or display field, so the first libetc VBlank wait (FUN_800976E4 under CdInit) never returned; a 600-step headless run now ends at the cap with 600 fences.
+- where: titles/spiderman2/frame_driver.cpp; guest FUN_80031F54
 - gap:
 - notes: Ported behaviour is the retail body itself; no SLUS_008.75 address or hook is reused.
 
@@ -470,7 +468,7 @@ fault proves no causal relationship between those events.
 - status: re-verified
 - deps: EE-02
 - evidence: Ghidra over SLUS_013.78 (decomp manifest entry spiderman2). libgpu leaves by their diagnostic strings: DrawOTag 0x8008E574, PutDrawEnv 0x8008E5E4, PutDispEnv 0x8008E6A4, DrawSync 0x8008E048, ResetGraph 0x8008DDE0. submitFrame 0x8006BE98 is DrawOTag's only caller: ResetGraph(1), PutDispEnv(db+0x5C), PutDrawEnv(db), DrawOTag(db->ot+0x3FFC) with db = *(gp+0xD20); the gameplay loop FUN_80031D40 calls it once per frame. libetc VSync is 0x80091604..0x8009177B (GPUSTAT pointer 0x800BEA60, Timer1 pointer 0x800BEA64); VSync(-1) returns the VBlank count 0x800C082C. PadInitDirect 0x800960AC is called from FUN_80076050 with buffers 0x800B2CC0/0x800B2CE2; a forced-button run reads 00 41 08 40 at 0x800B2CC0 on frame 150.
-- where: titles/spiderman2/enter_electro_guest_facts.h; titles/spiderman2/enter_electro_frame_driver.cpp
+- where: titles/spiderman2/guest_facts.h; titles/spiderman2/frame_driver.cpp
 - gap:
 - notes: The gameplay loop paces itself: FUN_80069154(1) spins on the VBlank counter at gp+0xCD0 for one field, then DrawSync(1), then submitFrame (0x80031EA4); FUN_80017940 does the same. submitFrame therefore does not end a turn. A turn ends at a libetc VSync wait or when the field's cycle budget is spent, and its one field presents if submitFrame ran inside it, otherwise rescans the last frame.
 

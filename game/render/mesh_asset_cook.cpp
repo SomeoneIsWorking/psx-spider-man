@@ -76,12 +76,10 @@ void MeshAssetCookLedger::unregisterAsset(uint32_t slot) {
   ++sequence_;
 }
 
-bool MeshAssetCookLedger::recordRawFace(uint32_t slot,
-                                        uint32_t meshIndex,
-                                        uint32_t mesh,
-                                        uint32_t face,
+bool MeshAssetCookLedger::recordRawFace(const MeshFaceKey &key,
                                         const uint32_t *words,
                                         std::size_t wordCount) {
+  const auto [slot, meshIndex, mesh, face] = key;
   if (slot >= assets_.size() || !assets_[slot].live || mesh == 0u || face == 0u ||
       !validWords(words, wordCount)) {
     ++refusalCount_;
@@ -110,12 +108,10 @@ bool MeshAssetCookLedger::recordRawFace(uint32_t slot,
   return true;
 }
 
-bool MeshAssetCookLedger::recordCookedFace(uint32_t slot,
-                                           uint32_t meshIndex,
-                                           uint32_t mesh,
-                                           uint32_t face,
+bool MeshAssetCookLedger::recordCookedFace(const MeshFaceKey &key,
                                            const uint32_t *words,
                                            std::size_t wordCount) {
+  const auto [slot, meshIndex, mesh, face] = key;
   if (slot >= assets_.size() || !assets_[slot].live || !validWords(words, wordCount)) {
     ++refusalCount_;
     return false;
@@ -204,10 +200,14 @@ bool meshAssetCookLedgerSelftest() {
   MeshAssetCookLedger ledger;
   ledger.beginAsset("dem1_g.psx", 3u);
   const bool rawAccepted =
-      ledger.recordRawFace(3u, 0u, 0x8018BC38u, 0x8018BC7Cu, raw.data(), raw.size());
+      ledger.recordRawFace({.slot = 3u, .meshIndex = 0u, .mesh = 0x8018BC38u, .face = 0x8018BC7Cu},
+                           raw.data(),
+                           raw.size());
   std::array<uint32_t, 7> recorded = cooked;
-  const bool cookedAccepted =
-      ledger.recordCookedFace(3u, 0u, 0x8018BC38u, 0x8018BC7Cu, recorded.data(), recorded.size());
+  const bool cookedAccepted = ledger.recordCookedFace(
+      {.slot = 3u, .meshIndex = 0u, .mesh = 0x8018BC38u, .face = 0x8018BC7Cu},
+      recorded.data(),
+      recorded.size());
   recorded[4] ^= 1u;
   const MeshAssetCookResolution exact = ledger.resolve(0x8018BC7Cu, cooked.data(), cooked.size());
   const MeshAssetCookResolution opposite =
@@ -226,9 +226,13 @@ bool meshAssetCookLedgerSelftest() {
   MeshAssetCookLedger preservedLedger;
   preservedLedger.beginAsset("preserved.psx", 4u);
   const bool preservedAccepted = preservedLedger.recordRawFace(
-      4u, 0u, 0x80190000u, 0x80190044u, preservedRaw.data(), preservedRaw.size());
+      {.slot = 4u, .meshIndex = 0u, .mesh = 0x80190000u, .face = 0x80190044u},
+      preservedRaw.data(),
+      preservedRaw.size());
   const bool preservedCookedAccepted = preservedLedger.recordCookedFace(
-      4u, 0u, 0x80190000u, 0x80190044u, preservedCooked.data(), preservedCooked.size());
+      {.slot = 4u, .meshIndex = 0u, .mesh = 0x80190000u, .face = 0x80190044u},
+      preservedCooked.data(),
+      preservedCooked.size());
   const MeshAssetCookResolution preserved =
       preservedLedger.resolve(0x80190044u, preservedCooked.data(), preservedCooked.size());
 

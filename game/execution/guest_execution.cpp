@@ -1,0 +1,53 @@
+#include "execution/guest_execution.h"
+
+#include "core.h"
+#include "execution_control.h"
+#include "native_dispatch.h"
+
+#include <lucent/log.h>
+
+namespace spider {
+
+GuestExecution::GuestExecution(Core &core) : core_(core) {}
+
+psx::cpu::ExecutionResult GuestExecution::enter(std::uint32_t address) {
+  return psx::cpu::dispatchGuest(core_, address, psx::cpu::ExecutionBudget::currentTurn(core_));
+}
+
+psx::cpu::ExecutionResult GuestExecution::resumeAt(std::uint32_t address) {
+  return psx::cpu::dispatchGuestUntilExit(
+      core_, address, psx::cpu::ExecutionBudget::currentTurn(core_));
+}
+
+psx::cpu::ExecutionResult GuestExecution::callOriginal(std::uint32_t address) {
+  return psx::cpu::callOriginal(core_, address, psx::cpu::ExecutionBudget::currentTurn(core_));
+}
+
+bool dispatchGuestOrPropagate(Core &core, std::uint32_t address) {
+  return psx::cpu::completeOrPropagate(
+      core, psx::cpu::dispatchGuest(core, address, psx::cpu::ExecutionBudget::currentTurn(core)));
+}
+
+bool callOriginalOrPropagate(Core &core, std::uint32_t address) {
+  return psx::cpu::completeOrPropagate(
+      core, psx::cpu::callOriginal(core, address, psx::cpu::ExecutionBudget::currentTurn(core)));
+}
+
+bool reportExecutionResult(const Core &core,
+                           const psx::cpu::ExecutionResult &result,
+                           std::string_view owner) {
+  if (result.returned() || result.reason == psx::cpu::ExecutionExitReason::ProcessExit) {
+    return true;
+  }
+  lucent::error("executor",
+                "{} stopped at guest PC 0x{:08X}, ra=0x{:08X}, a0=0x{:08X}: {} ({})",
+                owner,
+                result.guestPc,
+                core.r[31],
+                core.r[4],
+                psx::cpu::executionExitName(result.reason),
+                result.detail);
+  return false;
+}
+
+} // namespace spider

@@ -7,7 +7,7 @@
 
 namespace spider::render {
 
-enum class MeshAssetCookMatch {
+enum class MeshAssetCookMatch : std::uint8_t {
   Missing,
   Match,
   Mismatch,
@@ -25,6 +25,14 @@ struct MeshAssetCookResolution {
   bool structuralCookExact = false;
 };
 
+// A face of one mesh in one loaded asset slot.
+struct MeshFaceKey {
+  uint32_t slot = 0;
+  uint32_t meshIndex = 0;
+  uint32_t mesh = 0;
+  uint32_t face = 0;
+};
+
 class MeshAssetCookLedger {
 public:
   static constexpr std::size_t kMaxFaceWords = 8;
@@ -33,18 +41,8 @@ public:
   void reset();
   void beginAsset(const char *name, uint32_t slot);
   void unregisterAsset(uint32_t slot);
-  bool recordRawFace(uint32_t slot,
-                     uint32_t meshIndex,
-                     uint32_t mesh,
-                     uint32_t face,
-                     const uint32_t *words,
-                     std::size_t wordCount);
-  bool recordCookedFace(uint32_t slot,
-                        uint32_t meshIndex,
-                        uint32_t mesh,
-                        uint32_t face,
-                        const uint32_t *words,
-                        std::size_t wordCount);
+  bool recordRawFace(const MeshFaceKey &key, const uint32_t *words, std::size_t wordCount);
+  bool recordCookedFace(const MeshFaceKey &key, const uint32_t *words, std::size_t wordCount);
 
   [[nodiscard]] MeshAssetCookResolution
   resolve(uint32_t face, const uint32_t *words, std::size_t wordCount) const;

@@ -9,6 +9,9 @@ created: 2026-09-28
 updated: 2026-10-09
 ---
 
+> **2026-10-15.** The Gte path, `Spider1Widescreen` and `guestCoordinatesWidened` are deleted; both titles
+> present on Record with the stock aspect policy. The remaining margin gaps are issues 0034 and 0035.
+>
 > **2026-10-09, resolved.** The product presents a picture and the widening is proven on 2D and 3D
 > frames. The title runs the Gte path (`RenderCapabilities::widescreenOnly`), where the guest draws into
 > a widened frame and the host centres 4:3-authored guest primitives by the margin.
@@ -35,7 +38,7 @@ updated: 2026-10-09
 > `wide_2d_guest_space` return `RQ_2D_WIDE_FINAL`. The menu overlay publishes the same record from its
 > own walk (`ra 0x80155A88`) with a 3D model inside a 2D layout, so only publications from the resident
 > render walk (`ra 0x8002BE14`) widen; the claim ends at `commitSubmittedFrame` (a frame number is no key: field presents inside one guest frame advance it).
-> `Spider1BootstrapTurn::step` now calls `synchronizePresentation`, which had no caller.
+> `Spider1BootstrapTurn::step` then called `synchronizePresentation`, which had no caller.
 >
 > **Pair.** Frame 8052 (16:9) / 8047 (4:3), the same guest tick of `dem3` (the run drifts 5 presented
 > frames between aspects because a widened cull changes instruction counts and with them the CD

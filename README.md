@@ -11,7 +11,7 @@ No disc image, executable, or game asset is included. Supply a legally obtained 
 | Title | Executable identity | Current evidence |
 | --- | --- | --- |
 | Spider-Man | `SLUS_008.75` | The current Lightrec product has resumed and presented the first authenticated STR movie field. Both complete intro movies, `dem1`, and interactive gameplay remain unverified in this product; see the [current-state ledger](docs/project-state.md). |
-| Spider-Man 2: Enter Electro | `SLUS_013.78` | Boots from the retail crt0 under `EnterElectroFrameDriver` and presents the Marvel logo; the intro STR stream then never fills (`EE-04` in [the RE frontier](docs/re-frontier.md)). Gameplay is unreached. |
+| Spider-Man 2: Enter Electro | `SLUS_013.78` | Boots from the retail crt0 under its frame driver and presents the Marvel logo; the intro STR stream then never fills (`EE-04` in [the RE frontier](docs/re-frontier.md)). Gameplay is unreached. |
 
 The serial, PS-X EXE header, size, and SHA-256 jointly select a title. Names are labels, never
 selectors, and no title may borrow another title's addresses or behavior.

@@ -11,7 +11,7 @@ namespace spider::render {
 // registry ignores unregistered PSXPORT_* knobs.
 #define SPIDERMAN_FRAME_ENVELOPE_PRODUCER 1
 
-void FrameEnvelope::produce(Core *c, uint32_t drawEnvAddr, uint32_t dispEnvAddr) {
+void FrameEnvelope::produce(Core *c, const DrawEnv &draw, const DispEnv &disp) {
 #if !SPIDERMAN_FRAME_ENVELOPE_PRODUCER
   // Keep counting so a disabled build is visible in the log.
   ++mProduced;
@@ -22,13 +22,10 @@ void FrameEnvelope::produce(Core *c, uint32_t drawEnvAddr, uint32_t dispEnvAddr)
                  mProduced);
   }
   (void)c;
-  (void)drawEnvAddr;
-  (void)dispEnvAddr;
+  (void)draw;
+  (void)disp;
   return;
 #else
-
-  const DispEnv disp(c, dispEnvAddr);
-  const DrawEnv draw(c, drawEnvAddr);
 
   // PutDispEnv. GP1(05) is issued on every call and flips the scanned-out page (VRAM y=0/256).
   gpu_gp1(c, disp.displayStartWord());

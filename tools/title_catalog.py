@@ -9,8 +9,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-# Where every title's executable is provisioned, as <root>/<id>/<serial>; SpiderCatalog
-# (game/core/spider_catalog.cpp) names the same root for the product.
+# Where every title's executable is provisioned, as <root>/<id>/<serial>; spider::Catalog
+# (game/product/catalog.cpp) names the same root for the product.
 PROVISIONING_ROOT = Path("scratch/assets")
 
 

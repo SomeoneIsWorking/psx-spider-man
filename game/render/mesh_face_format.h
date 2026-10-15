@@ -60,9 +60,21 @@ struct MeshSourceVertex {
   uint16_t flags = 0;
 };
 
-MeshFaceHeader decodeMeshFaceHeader(uint32_t encoded, uint32_t indices, uint32_t control);
-MeshFt4TextureBinding
-decodeMeshFt4TextureBinding(uint16_t faceFlags, uint32_t uvClut, uint32_t uvTpage, uint32_t uvPair);
+// A face record's first two words.
+struct MeshFaceWords {
+  uint32_t encoded = 0;
+  uint32_t indices = 0;
+};
+
+// An FT4 face record's three UV words.
+struct MeshFt4UvWords {
+  uint32_t uvClut = 0;
+  uint32_t uvTpage = 0;
+  uint32_t uvPair = 0;
+};
+
+MeshFaceHeader decodeMeshFaceHeader(const MeshFaceWords &words, uint32_t control);
+MeshFt4TextureBinding decodeMeshFt4TextureBinding(uint16_t faceFlags, const MeshFt4UvWords &words);
 MeshSourceVertex decodeMeshSourceVertex(uint32_t xy, uint32_t zFlags);
 MeshLayout deriveMeshLayout(uint32_t mesh, const MeshLayoutCounts &counts);
 bool meshLayoutArgsMatch(const MeshLayout &layout,
