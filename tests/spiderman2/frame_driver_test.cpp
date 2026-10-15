@@ -136,5 +136,5 @@ void test_vblank_paced_frame_costs_one_field() {
 int main() {
   RUN(every_step_is_one_turn_and_one_fence);
   RUN(vblank_paced_frame_costs_one_field);
-  return pt_summary();
+  return psx::test::summary();
 }

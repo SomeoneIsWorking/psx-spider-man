@@ -96,7 +96,7 @@ struct CdCallbackProbe {
 
   static void invoked(Core *core) {
     ++calls;
-    irqTypeAtCall = cdc_current_irq_type(&core->game->cdc);
+    irqTypeAtCall = core->game->cdc.currentIrqType();
     responseAtCall = core->mem_r8(kSyntheticCdResponse);
     a0AtCall = core->r[4];
     a1AtCall = core->r[5];
@@ -221,8 +221,8 @@ void test_stock_cd_command_preserves_measured_guest_state_and_pending_result() {
   CHECK_EQ(core.mem_r8(spider::spider1::cdLastPositionAddress + 1u), 0x02u);
 
   game->disc.track_count = 2;
-  game->disc.tracks[0] = DiscTrackInfo{1, 0, 45'000, 150, 0, 0};
-  game->disc.tracks[1] = DiscTrackInfo{2, 45'000, 9'000, 0, 0, 0};
+  game->disc.tracks[0] = psx::cd::DiscTrackInfo{1, 0, 45'000, 150, 0, 0};
+  game->disc.tracks[1] = psx::cd::DiscTrackInfo{2, 45'000, 9'000, 0, 0, 0};
   dispatch_cd(core, {.command = 0x13u, .parameter = 0u, .result = kCdResult});
   CHECK_EQ(core.r[2], 0u);
   CHECK_EQ(core.mem_r8(kCdResult), 0x02u);
@@ -376,7 +376,7 @@ void test_direct_stream_wait_preserves_original_result_and_field_ownership() {
   CHECK_EQ(core.r[17], 2u);
   CHECK_EQ(game->cd.stream_delivered, 0u);
   CHECK_EQ(CdCallbackProbe::calls, 0u); // host pump must not bypass the guest ISR
-  CHECK_EQ(cdc_current_irq_type(&game->cdc), 1u);
+  CHECK_EQ(game->cdc.currentIrqType(), 1u);
   const auto fence = game->presentation.fence();
   const auto vblank = core.mem_r32(kVblankCount);
   core.mem_w32(0x800B0FA8u, 0xA5A5A5A5u); // VSync horizontal baseline
@@ -427,7 +427,7 @@ void test_stream_int1_reaches_ready_callback_only_after_guest_isr_consumes_respo
 
   game->cd.stockLibrary()->pumpStream(core, 1);
   CHECK_EQ(CdCallbackProbe::calls, 0u); // reached negative: host pump cannot invoke ready first
-  CHECK_EQ(cdc_current_irq_type(&game->cdc), 1u);
+  CHECK_EQ(game->cdc.currentIrqType(), 1u);
   CHECK_EQ(core.mem_r8(kSyntheticCdResponse), 0xFFu);
   CHECK_EQ(game->cd.stream_delivered, 0u);
 
@@ -437,7 +437,7 @@ void test_stream_int1_reaches_ready_callback_only_after_guest_isr_consumes_respo
   CHECK_EQ(CdCallbackProbe::responseAtCall, 0x22u);
   CHECK_EQ(CdCallbackProbe::a0AtCall, 1u);
   CHECK_EQ(CdCallbackProbe::a1AtCall, 0x22u);
-  CHECK_EQ(cdc_current_irq_type(&game->cdc), 0u);
+  CHECK_EQ(game->cdc.currentIrqType(), 0u);
   CHECK_EQ(core.mem_r32(kCdIStat) & (1u << 2u), 0u);
   CHECK_EQ(core.r[4], 0xAAAAAAAAu);
   CHECK_EQ(core.r[5], 0xBBBBBBBBu);
@@ -886,5 +886,5 @@ int main() {
   RUN(budget_exhausted_turn_delivers_one_display_field);
   RUN(pad_service_writes_retail_receive_buffers_only);
   RUN(level_warp_raises_the_guests_level_exit_from_the_loops_field_wait);
-  return pt_summary();
+  return psx::test::summary();
 }

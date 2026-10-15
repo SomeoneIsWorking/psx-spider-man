@@ -19,12 +19,4 @@ const GuestWidescreenProjection *Runtime::guestWidescreenProjection() const {
   return &aspectPolicy_;
 }
 
-RenderCapabilities Runtime::renderCapabilities() const {
-  return RenderCapabilities{.defaultPath = RenderPath::Record, .nativeRenderPath = false};
-}
-
-bool Runtime::guestVramIsPicture(const Game &) const {
-  return false;
-}
-
 } // namespace spider

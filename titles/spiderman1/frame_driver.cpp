@@ -66,7 +66,7 @@ void FrameDriver::stepFrame(Core &core, std::uint32_t) {
   }
   if (!serviceBoundary(core, result)) {
     reportExecutionResult(core, result, "Spider-Man 1");
-    game_.presentation.commitUnpresented(&core);
+    game_.presentation.commitUnpresented();
     game_.run.requestEnd();
   }
 }
@@ -105,7 +105,7 @@ void FrameDriver::serviceResetGraphVsync(Core &core) {
   const std::uint32_t returnValue = FieldClock::vsyncReturnValue(core);
   deliverField(core);
   completeVsync(core, returnValue);
-  game_.presentation.commitUnpresented(&core);
+  game_.presentation.commitUnpresented();
   core.pc = core.r[31];
   lucent::info("frame", "Spider-Man 1 completed pre-main ResetGraph field at 0x{:08X}", core.pc);
 }

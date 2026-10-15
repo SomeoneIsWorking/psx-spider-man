@@ -12,8 +12,11 @@
 namespace spider::spider1 {
 
 Runtime::Runtime()
-    : spider::Runtime({vsyncAddress, libetcVblankCountAddress}, padBuffers), libgte_(libgteEntries),
-      libcd_(libcdEntries, libcdWorkArea, 0), dmaCallbacks_(guestDmaCallbackTable) {}
+    : spider::Runtime(
+          psx::hle::StockVSync({.entry = vsyncAddress, .queryCounter = libetcVblankCountAddress}),
+          padBuffers),
+      libgte_(libgteEntries), libcd_(libcdEntries, libcdWorkArea, 0),
+      dmaCallbacks_(guestDmaCallbackTable) {}
 
 void Runtime::startProgram(Core &core) {
   psx::game::Crt0Boot{crt0Image}.run(core);

@@ -8,7 +8,10 @@
 
 namespace spider::enterelectro {
 
-Runtime::Runtime() : spider::Runtime({vsyncAddress, libetcVblankCountAddress}, padBuffers) {}
+Runtime::Runtime()
+    : spider::Runtime(
+          psx::hle::StockVSync({.entry = vsyncAddress, .queryCounter = libetcVblankCountAddress}),
+          padBuffers) {}
 
 void Runtime::registerOverrides(Game &game) {
   spider::Runtime::registerOverrides(game);

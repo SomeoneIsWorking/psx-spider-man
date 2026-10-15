@@ -26,6 +26,7 @@ from title_catalog import Title, TitleCatalogError, load_catalog
 ROOT = Path(__file__).resolve().parents[1]
 # The one product: both titles, picked in its window.
 PRODUCT_TARGET = "spiderman_port"
+FRAMEWORK_FETCH = ["uv", "run", "--no-project", "https://raw.githubusercontent.com/SomeoneIsWorking/psxport/main/tools/psxport_fetch.py", "--auto"]
 CYAN = "\033[1;36m"
 RED = "\033[1;31m"
 RESET = "\033[0m"
@@ -537,11 +538,9 @@ def launch(argv: Sequence[str]) -> int:
     jobs = cpu_count()
     build_root = player_build_root(cc, cxx)
 
-    run_or_refuse(
-        [python, "tools/psxport_fetch.py", "--auto"],
-        "could not resolve external/psxport",
-    )
     framework_text = os.environ.get("PSXPORT_DIR") or "external/psxport"
+    if not os.environ.get("PSXPORT_DIR") and not Path("external/psxport/cmake/psxport.cmake").is_file():
+        run_or_refuse(FRAMEWORK_FETCH, "could not resolve external/psxport")
     framework = Path(framework_text)
     if not (framework / "cmake/psxport.cmake").is_file():
         raise LauncherError(f"PSXPORT_DIR={framework_text} is not a psxport checkout")

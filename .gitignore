@@ -12,7 +12,7 @@ SLUS_*
 .env
 
 # The framework. Not tracked: either a relative symlink to the workspace's live psxport checkout
-# (local) or a clone of its main (fresh machine). Managed by tools/psxport_fetch.py.
+# (local) or a clone of its main (fresh machine). Made by psxport's tools/psxport_fetch.py.
 /external/psxport
 /external/re-harness
 *.log

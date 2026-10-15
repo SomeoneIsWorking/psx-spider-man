@@ -9,7 +9,7 @@ set(PSXPORT_DIR "${CMAKE_SOURCE_DIR}/external/psxport" CACHE PATH
     "psxport framework source directory")
 if(NOT EXISTS "${PSXPORT_DIR}/cmake/psxport.cmake")
   message(FATAL_ERROR
-    "PSXPORT_DIR=${PSXPORT_DIR} has no cmake/psxport.cmake; run tools/psxport_fetch.py")
+    "PSXPORT_DIR=${PSXPORT_DIR} has no cmake/psxport.cmake; run ./run.sh once to fetch it")
 endif()
 message(STATUS "psxport framework: ${PSXPORT_DIR}")
 
