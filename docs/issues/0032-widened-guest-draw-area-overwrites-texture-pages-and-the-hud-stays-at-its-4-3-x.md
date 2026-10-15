@@ -1,13 +1,18 @@
 ---
 id: 32
 title: The widened 684-wide guest draw area overwrites the texture pages and CLUTs at VRAM x 512..683, and the 4:3-authored overlay stays at x 256
-status: open
+status: resolved
 symptom: at 16:9 in the attract demo, black quads appear at the right edge (polygons sampling overwritten textures), and the "DEMO" caption stays centred on x 256 in the 684-wide frame
 state_items: S008
 tags: widescreen,render,vram,texture,hud,gte-path
 created: 2026-10-09
-updated: 2026-10-09
+updated: 2026-10-15
 ---
+
+> **2026-10-15, resolved by the owner's removal.** `Spider1Widescreen` is deleted and both titles present on
+> Record: the guest draw environment keeps the retail RECT.w 512, so nothing writes VRAM x 512..683, and the
+> Record canvas places the whole guest frame, caption included, at x 86 of 684 (attract demo shots at frames
+> 13500 and 14000, `scratch/restructure/smoke/sm1-169-attract/`). What the margins still lack is issue 0034.
 
 ## Black quads
 
@@ -15,7 +20,7 @@ Observed: `dem3` at 16:9, frame 8000, polygons whose screen x reaches past 512 d
 (guest packets with tpage 0x39/0xaa/0x29 and CLUT 0x121/0xac). Expected: the textured geometry of the 4:3
 picture continuing into the margin.
 
-Cause: `Spider1Widescreen::publishDrawEnvironment` (`titles/spiderman1/spider1_widescreen.cpp`) writes RECT.w = 684
+Cause: `Spider1Widescreen::publishDrawEnvironment` (`titles/spiderman1/spider1_widescreen.cpp`, deleted) writes RECT.w = 684
 into the guest draw environment, so the guest's E4 is x 683 for both frame buffers (0,0 and 0,256). The Gte
 path rasterizes the guest's draws into the one VRAM image, and the retail layout keeps texture pages and CLUTs at
 x 512..1023 beside the 512-wide buffers. The widened draws overwrite x 512..683 on rows 0..239 and 256..495.

@@ -24,7 +24,8 @@ uint8_t textureBitsPerPixel(uint16_t tpage) {
 
 } // namespace
 
-MeshFaceHeader decodeMeshFaceHeader(uint32_t encoded, uint32_t indices, uint32_t control) {
+MeshFaceHeader decodeMeshFaceHeader(const MeshFaceWords &words, uint32_t control) {
+  const auto [encoded, indices] = words;
   MeshFaceHeader result;
   result.encoded = encoded;
   result.effective = effectiveFaceWord(encoded, control);
@@ -38,10 +39,8 @@ MeshFaceHeader decodeMeshFaceHeader(uint32_t encoded, uint32_t indices, uint32_t
   return result;
 }
 
-MeshFt4TextureBinding decodeMeshFt4TextureBinding(uint16_t faceFlags,
-                                                  uint32_t uvClut,
-                                                  uint32_t uvTpage,
-                                                  uint32_t uvPair) {
+MeshFt4TextureBinding decodeMeshFt4TextureBinding(uint16_t faceFlags, const MeshFt4UvWords &words) {
+  const auto [uvClut, uvTpage, uvPair] = words;
   MeshFt4TextureBinding result;
   result.uv[0] = decodeUv(static_cast<uint16_t>(uvClut));
   result.uv[1] = decodeUv(static_cast<uint16_t>(uvTpage));
@@ -85,12 +84,14 @@ bool meshLayoutArgsMatch(const MeshLayout &layout,
 }
 
 bool meshFaceFormatSelftest() {
-  const MeshFaceHeader known = decodeMeshFaceHeader(0x001C1083u, 0x02030001u, 0xFFFF0000u);
-  const MeshFaceHeader controlled = decodeMeshFaceHeader(0x001C1083u, 0x02030001u, 0xFFFC0001u);
-  const MeshFt4TextureBinding texture =
-      decodeMeshFt4TextureBinding(known.flags, 0x00E2FD3Bu, 0x0008FD34u, 0xF634F63Bu);
-  const MeshFt4TextureBinding plainTexture =
-      decodeMeshFt4TextureBinding(0u, 0x00E2FD3Bu, 0x0008FD34u, 0xF634F63Bu);
+  const MeshFaceHeader known =
+      decodeMeshFaceHeader({.encoded = 0x001C1083u, .indices = 0x02030001u}, 0xFFFF0000u);
+  const MeshFaceHeader controlled =
+      decodeMeshFaceHeader({.encoded = 0x001C1083u, .indices = 0x02030001u}, 0xFFFC0001u);
+  const MeshFt4TextureBinding texture = decodeMeshFt4TextureBinding(
+      known.flags, {.uvClut = 0x00E2FD3Bu, .uvTpage = 0x0008FD34u, .uvPair = 0xF634F63Bu});
+  const MeshFt4TextureBinding plainTexture = decodeMeshFt4TextureBinding(
+      0u, {.uvClut = 0x00E2FD3Bu, .uvTpage = 0x0008FD34u, .uvPair = 0xF634F63Bu});
   const MeshSourceVertex vertex = decodeMeshSourceVertex(0xFFFE0001u, 0x90000003u);
   const MeshLayout layout = deriveMeshLayout(0x80100000u, {4u, 1u, 1u});
   return known.effective == 0x001C1083u && known.recordBytes == 0x1Cu && known.flags == 0x1083u &&

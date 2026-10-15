@@ -59,9 +59,10 @@ address metadata; it must not emit executable guest function bodies.
    positive one-block admission and zero-limit refusal before interpreter execution. Multi-`Core`,
    aggregate fallback-share, complete executable-writer, and non-Linux host qualification gaps
    remain owned by psxport.
-3. **Spider runtime dispatch — wired to the boundary.** The product enters the authenticated crt0 via
-   `dispatchGuest`; `Spider1MovieExecution` resumes unchanged retail `FUN_8002AA0C` through
-   `callOriginal`. Native override promotion must use image generation plus address identity.
+3. **Spider runtime dispatch — wired to the boundary.** `Crt0Boot` replays the authenticated crt0 and
+   `spider1::FrameDriver` runs retail main as host turns; the unchanged retail STR player `FUN_8002AA0C`
+   runs through Lightrec and the frame driver services its three VSync stops. Native override promotion
+   must use image generation plus address identity.
 4. **First discriminator: `dem1`.** Execute nonzero Lightrec blocks from the authenticated
    `SLUS_008.75`, preserve the existing native CD/input/audio/frame/render-seam owners, complete both
    logos, and reach early `dem1`. Suspend and resume the unchanged retail movie body at the three

@@ -6,7 +6,7 @@
 
 namespace spider::render {
 
-enum class AnimatedProjectionScale {
+enum class AnimatedProjectionScale : std::uint8_t {
   // FUN_8007B798 shifts each signed source coordinate before RTPS and retains MAC1..3 verbatim.
   FarPreScaled,
   // FUN_8007B9CC submits the full source coordinates and shifts MAC1..3 after RTPS.

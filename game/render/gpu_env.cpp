@@ -10,17 +10,30 @@ namespace {
 constexpr uint32_t kLibgpuVramW = 0x800B0E2Cu;
 constexpr uint32_t kLibgpuVramH = 0x800B0E2Eu;
 
-// Shared clamp of FUN_80082A00/FUN_80082A98: negative -> 0, above extent -> extent-1, on the
-// sign-extended s16.
-int clampToExtent(int v, int extent) {
-  const int16_t s = (int16_t)v;
-  if (s < 0) {
-    return 0;
+// One axis of libgpu's VRAM extent with the FUN_80082A00/FUN_80082A98 clamp: negative -> 0, above
+// extent -> extent-1, on the sign-extended s16.
+struct VramAxis {
+  int extent = 0;
+
+  [[nodiscard]] int clamp(int v) const {
+    const auto s = static_cast<int16_t>(v);
+    if (s < 0) {
+      return 0;
+    }
+    if (s > extent - 1) {
+      return extent - 1;
+    }
+    return s;
   }
-  if (s > extent - 1) {
-    return extent - 1;
-  }
-  return s;
+};
+
+struct VramExtent {
+  VramAxis x;
+  VramAxis y;
+};
+
+VramExtent readVramExtent(Core *c) {
+  return {.x = {.extent = c->mem_r16(kLibgpuVramW)}, .y = {.extent = c->mem_r16(kLibgpuVramH)}};
 }
 
 // NTSC/PAL selector: the byte FUN_8008BF64 (GetVideoMode) returns, read from guest RAM.
@@ -56,18 +69,18 @@ void DrawEnv::read(Core *c, uint32_t base) {
 }
 
 uint32_t DrawEnv::areaTopLeftWord(Core *c) const {
-  const int w = c->mem_r16(kLibgpuVramW), h = c->mem_r16(kLibgpuVramH);
-  return 0xE3000000u | ((uint32_t)clampToExtent(mClipY, h) & 0x3FFu) << 10 |
-         ((uint32_t)clampToExtent(mClipX, w) & 0x3FFu);
+  const VramExtent vram = readVramExtent(c);
+  return 0xE3000000u | ((uint32_t)vram.y.clamp(mClipY) & 0x3FFu) << 10 |
+         ((uint32_t)vram.x.clamp(mClipX) & 0x3FFu);
 }
 
 uint32_t DrawEnv::areaBottomRightWord(Core *c) const {
-  const int w = c->mem_r16(kLibgpuVramW), h = c->mem_r16(kLibgpuVramH);
+  const VramExtent vram = readVramExtent(c);
   // The guest adds in u16 and sign-extends back to s16, so the wrap is part of the contract.
   const int brX = (int16_t)(uint16_t)(mClipX + mClipW - 1);
   const int brY = (int16_t)(uint16_t)(mClipY + mClipH - 1);
-  return 0xE4000000u | ((uint32_t)clampToExtent(brY, h) & 0x3FFu) << 10 |
-         ((uint32_t)clampToExtent(brX, w) & 0x3FFu);
+  return 0xE4000000u | ((uint32_t)vram.y.clamp(brY) & 0x3FFu) << 10 |
+         ((uint32_t)vram.x.clamp(brX) & 0x3FFu);
 }
 
 uint32_t DrawEnv::drawOffsetWord() const {
@@ -96,9 +109,9 @@ int DrawEnv::backgroundClearWords(Core *c, uint32_t *out) const {
   if (!mIsBg) {
     return 0;
   }
-  const int vw = c->mem_r16(kLibgpuVramW), vh = c->mem_r16(kLibgpuVramH);
-  const uint32_t clampedW = (uint32_t)clampToExtent(mClipW, vw);
-  const uint32_t clampedH = (uint32_t)clampToExtent(mClipH, vh);
+  const VramExtent vram = readVramExtent(c);
+  const auto clampedW = (uint32_t)vram.x.clamp(mClipW);
+  const auto clampedH = (uint32_t)vram.y.clamp(mClipH);
   const uint32_t colour = ((uint32_t)mB << 16) | ((uint32_t)mG << 8) | (uint32_t)mR;
   const uint32_t size = (clampedH << 16) | clampedW;
 

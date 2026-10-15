@@ -28,12 +28,17 @@ respectively in `docs/project-goals.md`, `docs/project-state.md`, `docs/codemap.
 ## How the product starts
 
 Both titles are one product: `spiderman_port` runs psxport's `psx::host::ProductHost` over
-`spider::SpiderCatalog` (`game/core/spider_catalog.*`, identities from each `titles/<title>/title.json`)
+`spider::Catalog` (`game/product/catalog.*`, identities from each `titles/<title>/title.json`)
 through the framework main. Zero arguments open the in-window picker over the provisioned titles; one
-executable argument runs that title directly. Boot is the host's generic `TitleSession` sequence. Spider-Man
-1's own steps are `Spider1Runtime` hooks (`registerOverrides`, `bootInit`) and `Spider1FrameDriver::stepFrame`;
-Spider-Man 2 is `DriverOwned` and `EnterElectroFrameDriver` enters its crt0 and runs one budgeted guest turn
-and one presentation fence per step.
+executable argument runs that title directly. Boot is the host's generic `TitleSession` sequence. Each
+title's runtime derives from `spider::Runtime` (`game/runtime/runtime.*`: VSync, pad buffers, Record
+presentation, aspect policy). Spider-Man 1's `spider1::Runtime` runs crt0 and points the first turn at
+retail main in `startProgram`, binds stock libgte/libcd/DMA callbacks in `registerOverrides`, and steps
+with `spider1::FrameDriver::stepFrame`; Spider-Man 2's `enterelectro::FrameDriver` enters its crt0 and
+runs one budgeted guest turn and one presentation fence per step.
+
+To reach a Spider-Man 1 level, send `warp <level>` (a level table name such as `l1a2_t`) on the debug
+server; `spider1::LevelWarp` raises it through the guest's own level route.
 
 ## Spider-Man first discriminator
 

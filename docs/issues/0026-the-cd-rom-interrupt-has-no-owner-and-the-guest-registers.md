@@ -153,7 +153,7 @@ path, not from an interrupt.
 
 ### 5c. The title declares the delivery the framework promised, and the promise is in framework source
 
-`spider1_platform_facts.h:48`:
+`spiderman1/platform_facts.h:48`:
 
 ```cpp
 inline constexpr GuestCdStreamCallbackLayout cdStreamCallbacks{
@@ -162,7 +162,7 @@ inline constexpr GuestCdStreamCallbackLayout cdStreamCallbacks{
 };
 ```
 
-`Spider1Runtime::guestCdStreamCallbackLayout()` returns it, and `cd_override.cpp:866-874` acts on it:
+`spider1::Runtime::guestCdStreamCallbackLayout()` returns it, and `cd_override.cpp:866-874` acts on it:
 
 ```cpp
 if (!c->cfg && layout && layout->valid() &&
@@ -189,9 +189,9 @@ already right about what that means:
 
 ### 5d. The title's `CdInit` override also drops the guest's own registration
 
-`Spider1FrameDriver::initializeCd` replaces the whole `0x8008A16C` body. The body's other half is
+`spider1::FrameDriver::initializeCd` replaces the whole `0x8008A16C` body. The body's other half is
 `0x8008A1FC` → `0x8008D4E4`, which is the CD-ROM controller initialisation and, at `0x8008D54C`,
-`jal 0x8008B86C` with `a0 = 2`. **CORRECTION to `spider1_platform_facts.h:36-46`:** `0x8008B86C` is
+`jal 0x8008B86C` with `a0 = 2`. **CORRECTION to `spiderman1/platform_facts.h:36-46`:** `0x8008B86C` is
 **not** a B-vector thunk and not a BIOS call. From the executable:
 
 ```

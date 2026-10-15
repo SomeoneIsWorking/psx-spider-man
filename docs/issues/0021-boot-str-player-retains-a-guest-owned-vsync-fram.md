@@ -9,9 +9,16 @@ created: 2026-08-27
 updated: 2026-09-27
 ---
 
+## Current state (2026-10-15)
+
+`Spider1FrameDriver::runBootPrefix`, `Spider1ModeDriver`, the host-stepped fiber and the native movie
+player were deleted unreached. Retail main and the STR player run unchanged through Lightrec;
+`spider1::FrameDriver` ends a turn at each of the player's three `VSync(0)` stops and services it as
+one display field at the authenticated return PC. The sections below are the history.
+
 ## Root cause
 
-`Spider1FrameDriver::runBootPrefix` still dispatches the whole retail boot sequencer
+`Spider1FrameDriver::runBootPrefix` dispatched the whole retail boot sequencer
 `FUN_8006BF9C` before installing `Spider1ModeDriver`. That sequencer calls the sole STR player
 `FUN_8002AA0C` for logo IDs 0 and 1. The player owns a persistent decode loop and directly calls
 libetc `VSync(0)` at return PCs `0x8002AC8C` (initial display), `0x8002AE1C` (each decoded frame),
@@ -180,10 +187,10 @@ handler `0x8008C3E0` and registered CD callbacks. These `VSync(-1)` calls are ti
 display-field/presentation requests. Advancing the frame counter or treating them as ordinary
 movie fields would hide the missing command completion.
 
-The shared direct-runtime `PlatformHlePlan::stockCdWorkArea` now lets the existing native command
+psxport `StockLibcd`'s `StockCommandWorkArea` lets the native command
 owner preserve the guest's measured CdLastPos and last-mode bytes without a title-specific command
 implementation. Spider declares `CD_cw` at `0x8008CE8C`, position `0x800B3B2C`, and mode
-`0x800B3B30`. The shipping `spider1_runtime_services` test dispatches Setloc and Setmode through
+`0x800B3B30`. The shipping `spiderman1_runtime` test dispatches Setloc and Setmode through
 that binding, verifies the four position bytes and one mode byte, and proves GetTN's result survives
 the separately bound inner CdSync. A direct runtime with no work-area declaration leaves those
 guest bytes unchanged. The test also instruments the installed callback addresses and observes zero
@@ -226,7 +233,7 @@ chain: the ready callback calls producer `0x80085000`, which calls `0x80086C60` 
 The libetc body loads the field count at `0x800B397C` for negative arguments and returns without
 waiting. This is a counter query inside sector delivery, not another movie field.
 
-The shared `PlatformHlePlan` query contract and Spider's measured counter declaration now return
+psxport `StockVSync`, bound with Spider's measured counter `0x800B397C`, returns
 that guest word for negative VSync arguments, while nonnegative calls retain their protected typed
 frame boundary. A missing counter declaration aborts explicitly. A shipping-path synthetic
 Lightrec test runs a guest ready callback that calls `VSync(-1)`, observes the returned count,
@@ -308,7 +315,8 @@ The 8/8 reason-3 result was real when it was taken, against an older framework r
 what this tree does now. Nothing further should be built on the guard hypothesis.
 
 **Second, and this one is real and title-owned: the CD interrupt was never armed.** See
-`Spider1FrameDriver::armCdInterrupt` in `titles/spiderman1/spider1_frame_driver.cpp`. The retail
+`Spider1FrameDriver::armCdInterrupt` in `titles/spiderman1/spider1_frame_driver.cpp` (now
+`spider1::CdInitialization`). The retail
 `CdInit` body reaches the B-vector interrupt-enable thunk `0x8008B86C` with `a0 = 2`
 (`0x8008A17C` -> `0x8008A1FC` -> `0x8008D4E4` -> `0x8008D54C`); the title's override replaced that
 body and dropped the arm, so `Hle::irqPoll` computed `i_stat & i_mask = 0x004 & 0x009 = 0` and the

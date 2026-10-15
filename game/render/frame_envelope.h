@@ -9,9 +9,9 @@ namespace spider::render {
 
 class FrameEnvelope {
 public:
-  // Called before per-scene dispatch; a whole-guest fallback frame skips it. The two addresses
-  // are the double-buffer context's blocks.
-  void produce(Core *c, uint32_t drawEnvAddr, uint32_t dispEnvAddr);
+  // Called before per-scene dispatch with the double-buffer context's blocks; a whole-guest
+  // fallback frame skips it.
+  void produce(Core *c, const DrawEnv &draw, const DispEnv &disp);
 
   unsigned long long produced() const {
     return mProduced;

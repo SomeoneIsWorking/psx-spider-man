@@ -17,7 +17,7 @@ LBA 8696 to `0x8014C788` and 56 from LBA 10582 to `0x8014D5AC`.
 
 ## Cause
 
-`Spider1Runtime` does not implement `GameRuntime::stockCdReadLanded`, so no CD-read landing is ever
+`spider1::Runtime` does not implement `GameRuntime::stockCdReadLanded`, so no CD-read landing is ever
 published as a code image and Lightrec has no image for the overlay addresses.
 
 ## Fix
@@ -33,7 +33,7 @@ The arena comes from the guest's own loader. `FUN_8001B990` allocates `NAME.bin`
 heap 1, reads it with CdRead through `FUN_80064DA4` (state 2, `FUN_80089ECC`) and relocates `NAME.rel`
 (`FUN_8001BF58`). Heap 1 is set up by `FUN_8006BF9C` from the descriptor at `0x8009C5B8`: heap 0 is
 `[0x800C65D4, 0x800C65E4)`, heap 1 runs from `0x800C65E4` to the stack guard `0x801FE000`.
-`Spider1Runtime::stockCdReadLanded` passes that arena (`overlayHeapArena`). Both measured reads (LBA 8696 to
+`spider1::Runtime::stockCdReadLanded` passes that arena (`overlayHeapArena`). Both measured reads (LBA 8696 to
 `0x8014C788`, LBA 10582 to `0x8014D5AC`) lie inside it.
 
 Tests: psxport `test_guest_code_module_publication` (inside, outside, straddling, repeated, replaced by
@@ -42,10 +42,11 @@ shared owner.
 
 ## Projection abort (S008)
 
+The owner and its test were deleted on 2026-10-15 with the move to Record (issue 0034).
 `Spider1Widescreen::publishProjection` read the viewport record from the cell `0x800B5918`, but
 `FUN_80075D0C` stores its `$a1` argument into that cell itself, so the first call finds it zero. It is not a
-widescreen defect: the 4:3 run (`aspect=0`) aborted identically. The record is now taken from `$a1`;
-test `the_first_publication_takes_the_record_from_its_argument` covers both aspects with the cell zero (the
+widescreen defect: the 4:3 run (`aspect=0`) aborted identically. The record was then taken from `$a1`;
+test `the_first_publication_takes_the_record_from_its_argument` covered both aspects with the cell zero (the
 old fixture pre-wrote the cell and hid the defect).
 
 ## Result
@@ -56,6 +57,7 @@ The run passes the overlay, presents the legal screen (512x240, 100%), the menu 
 ## Landed alongside the diagnosis
 
 A full turn budget with no VSync or stream boundary now delivers one display field
-(`Spider1FrameDriver::deliverBootstrapWaitField`); without it the post-logo wait
+(`Spider1FrameDriver::deliverBootstrapWaitField`, now the spent-budget case of
+`spider1::FrameDriver::stepFrame`); without it the post-logo wait
 (`FUN_8006bf9c`, 300 field-callback ticks) and the overlay mode loops never advance the counter at
 `0x800B5468`.
