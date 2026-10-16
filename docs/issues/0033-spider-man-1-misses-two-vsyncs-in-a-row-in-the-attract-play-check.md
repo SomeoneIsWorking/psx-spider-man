@@ -6,7 +6,7 @@ symptom: the windowed player build's 3700-frame play check reports a longest mis
 state_items: S019
 tags: pacing,frame-time,play-check
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-16
 ---
 
 ## Observed
@@ -28,3 +28,9 @@ runtime change did not introduce it.
 Which frames miss, and whether the ~500 ms worst frame is the same event. Next step: rerun with the
 per-frame time log and match the long frames to the guest state (movie start, mode switch, CD read)
 at those fences.
+
+## 2026-10-16
+
+Not reproduced. Five real-window runs (Clang RelWithDebInfo, `config/aspect_16x9.ini`) went through the logos,
+legal screen, menu and attract demo to frame 4260 and then into `l1a2_t`. Every run reports `longest_miss_run=1`,
+with at most 3 misses before the warp and a worst interval of 62 ms. The post-warp miss rate is psxport issue 0161.
