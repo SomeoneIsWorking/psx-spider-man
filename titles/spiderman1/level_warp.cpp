@@ -40,14 +40,11 @@ bool LevelWarp::inLevelTable(Core &core, std::string_view name) {
   return false;
 }
 
-std::string LevelWarp::arm(Core &core, std::string_view line) {
-  const std::size_t space = line.find(' ');
-  const std::size_t start =
-      space == std::string_view::npos ? space : line.find_first_not_of(' ', space);
-  if (start == std::string_view::npos) {
+std::string LevelWarp::arm(Core &core, const psx::debug::CommandArgs &args) {
+  const std::string_view name = args.word(1);
+  if (name.empty()) {
     return "usage: warp <level> (a level table name such as l1a2_t)";
   }
-  const std::string_view name = line.substr(start, line.find(' ', start) - start);
   if (name.size() > kNameCapacity || !inLevelTable(core, name)) {
     return lucent::format("refused: {} is not in the level table at 0x{:08X}", name, kLevelTable);
   }

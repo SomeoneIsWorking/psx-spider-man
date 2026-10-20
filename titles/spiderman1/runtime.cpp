@@ -20,7 +20,7 @@ Runtime::Runtime()
 
 void Runtime::startProgram(Core &core) {
   psx::game::Crt0Boot{crt0Image}.run(core);
-  FrameDriver::from(core).beginGuest(core);
+  core.game->frameDriverAs<FrameDriver>().beginGuest(core);
 }
 
 void Runtime::registerOverrides(Game &game) {
@@ -28,7 +28,7 @@ void Runtime::registerOverrides(Game &game) {
   libgte_.bind(game);
   libcd_.bind(game);
   dmaCallbacks_.bind(game);
-  FrameDriver::from(game.core).installOverrides();
+  game.frameDriverAs<FrameDriver>().installOverrides();
   session(game.core).stream.install();
 }
 
@@ -44,7 +44,7 @@ bool Runtime::titleCommand(Core &core, const psx::game::TitleCommandLine &input,
   if (std::strcmp(input.command, "warp") != 0) {
     return false;
   }
-  std::fprintf(reply, "%s\n", FrameDriver::from(core).armWarp(core, input.line).c_str());
+  std::fprintf(reply, "%s\n", core.game->frameDriverAs<FrameDriver>().armWarp(core, input.args).c_str());
   return true;
 }
 

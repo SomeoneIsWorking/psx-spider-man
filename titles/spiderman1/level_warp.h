@@ -1,5 +1,7 @@
 #pragma once
 
+#include "command_args.h"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -28,8 +30,8 @@ public:
   static constexpr std::uint32_t kFieldWaitEnd = 0x8005E77Cu;
   static constexpr std::array<std::uint32_t, 2> kLoopFieldWaitReturns{0x8002C274u, 0x8002C294u};
 
-  // Parses one command line; the returned text answers the client.
-  std::string arm(Core &core, std::string_view line);
+  // The returned text answers the client.
+  std::string arm(Core &core, const psx::debug::CommandArgs &args);
   // Raises the armed request when the guest stands in the gameplay loop's field wait with no exit
   // of its own pending; returns the level applied.
   std::optional<std::string> apply(Core &core);

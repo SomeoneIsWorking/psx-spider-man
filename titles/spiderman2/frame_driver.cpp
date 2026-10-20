@@ -15,23 +15,14 @@ namespace spider::enterelectro {
 
 FrameDriver::FrameDriver(Game &game) : game_(game), execution_(game.core) {}
 
-FrameDriver &FrameDriver::from(Core &core) {
-  auto *driver = core.game ? dynamic_cast<FrameDriver *>(core.game->frameDriver.get()) : nullptr;
-  if (!driver) {
-    lucent::error("frame", "a Spider-Man 2 native owner ran without its title FrameDriver");
-    std::abort();
-  }
-  return *driver;
-}
-
 void FrameDriver::installOverrides() {
   psx::cpu::installNativeOverride(
       game_.core, submitFrameAddress, "Spider-Man 2 submitFrame", submitFrame);
 }
 
 void FrameDriver::submitFrame(Core *core) {
-  FrameDriver &driver = from(*core);
-  if (!callOriginalOrPropagate(*core, submitFrameAddress)) {
+  FrameDriver &driver = core->game->frameDriverAs<FrameDriver>();
+  if (!psx::cpu::callOriginalOrPropagate(*core, submitFrameAddress)) {
     return;
   }
   // The field this turn ends on presents it; the guest's own VBlank wait owns the cadence.

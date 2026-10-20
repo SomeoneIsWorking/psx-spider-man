@@ -23,8 +23,6 @@ public:
   [[nodiscard]] uint64_t presentedFrames() const;
   [[nodiscard]] uint64_t waitedFields() const;
 
-  // The driver of the Game `core` belongs to; aborts when it is another title's.
-  static FrameDriver &from(Core &core);
 
 private:
   static void submitFrame(Core *core);

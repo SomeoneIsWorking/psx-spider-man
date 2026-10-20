@@ -29,16 +29,6 @@ psx::cpu::ExecutionResult FrameDriver::executeHostTurn(Core &core, std::uint32_t
       core, address, psx::cpu::ExecutionBudget::currentTurn(core));
 }
 
-FrameDriver &FrameDriver::from(Core &core) {
-  auto *driver =
-      core.game != nullptr ? dynamic_cast<FrameDriver *>(core.game->frameDriver.get()) : nullptr;
-  if (driver == nullptr) {
-    lucent::error("frame", "a Spider-Man 1 native owner ran without its title FrameDriver");
-    std::abort();
-  }
-  return *driver;
-}
-
 void FrameDriver::installOverrides() {
   // Stock GPU DMA timeout arm; its VSync(-1) just reads the title field count.
   psx::cpu::installNativeOverride(
@@ -52,8 +42,8 @@ void FrameDriver::beginGuest(Core &core) {
   core.pc = gameMainEntry;
 }
 
-std::string FrameDriver::armWarp(Core &core, const char *line) {
-  return warp_.arm(core, line);
+std::string FrameDriver::armWarp(Core &core, const psx::debug::CommandArgs &args) {
+  return warp_.arm(core, args);
 }
 
 void FrameDriver::stepFrame(Core &core, std::uint32_t) {
@@ -143,12 +133,12 @@ void FrameDriver::deliverField(Core &core) {
   game_.spu_audio.frame();
   if (vsyncCallback_ != 0) {
     const R3000 saved = static_cast<const R3000 &>(core);
-    if (!dispatchGuestOrPropagate(core, vsyncCallback_)) {
+    if (!psx::cpu::dispatchGuestOrPropagate(core, vsyncCallback_, "vsync-callback")) {
       return;
     }
     static_cast<R3000 &>(core) = saved;
   }
-  psx::cpu::notifyDisplayField(core);
+  core.hostTurn.onDisplayField(core);
 }
 
 void FrameDriver::commitField(Core &core) {
@@ -163,7 +153,7 @@ void FrameDriver::completeVsync(Core &core, std::uint32_t returnValue) {
 }
 
 void FrameDriver::captureVsyncCallback(Core *core) {
-  FrameDriver &driver = from(*core);
+  FrameDriver &driver = core->game->frameDriverAs<FrameDriver>();
   if (core->r[4] != driver.vsyncCallback_) {
     lucent::info("frame",
                  "Spider-Man 1 registered field callback 0x{:08X} (was 0x{:08X})",
