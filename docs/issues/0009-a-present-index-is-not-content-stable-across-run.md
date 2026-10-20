@@ -53,7 +53,7 @@ PARTIAL FIX 2026-08-06: tools/make_pad_replay.py + PSXPORT_PAD_REPLAY. Input det
 LARGE divergence but NOT all of it, and the residual is measured rather than hand-waved.
 
     python3 tools/make_pad_replay.py scratch/bin/drive.pad --frames 20000 --button 4000
-    PSXPORT_NOWINDOW=1 PSXPORT_PAD_REPLAY=scratch/bin/drive.pad PSXPORT_PRESENT_SHOT_AT=10000 ./run.sh
+    PSXPORT_VK_HEADLESS=1 PSXPORT_PAD_REPLAY=scratch/bin/drive.pad PSXPORT_PRESENT_SHOT_AT=10000 ./run.sh
 
 The file is one uint16 LE active-low mask per pad frame, forced back verbatim, generated with the
 same pulse shape FORCE_BUTTONS uses (8 on / 24 off). --button takes the SAME hex a human writes for
