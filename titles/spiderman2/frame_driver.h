@@ -1,6 +1,5 @@
 #pragma once
 
-#include "execution/guest_execution.h"
 #include "game_runtime.h"
 
 #include <cstdint>
@@ -28,7 +27,6 @@ private:
   static void submitFrame(Core *core);
 
   Game &game_;
-  GuestExecution execution_;
   bool entered_ = false;
   bool submitted_ = false;
   uint64_t presentedFrames_ = 0;

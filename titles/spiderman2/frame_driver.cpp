@@ -4,6 +4,7 @@
 #include "execution/guest_execution.h"
 #include "execution_exit.h"
 #include "game.h"
+#include "guest_call.h"
 #include "logic_frame.h"
 #include "native_dispatch.h"
 #include "spiderman2/guest_facts.h"
@@ -13,7 +14,7 @@
 
 namespace spider::enterelectro {
 
-FrameDriver::FrameDriver(Game &game) : game_(game), execution_(game.core) {}
+FrameDriver::FrameDriver(Game &game) : game_(game) {}
 
 void FrameDriver::installOverrides() {
   psx::cpu::installNativeOverride(
@@ -33,7 +34,7 @@ void FrameDriver::stepFrame(Core &core, uint32_t frame) {
   submitted_ = false;
   // The first turn enters crt0 at the executable entry admission left in pc.
   const psx::cpu::ExecutionResult result =
-      entered_ ? execution_.resumeAt(core.pc) : execution_.enter(core.pc);
+      entered_ ? psx::cpu::dispatchGuestUntilExitNow(core, core.pc) : psx::cpu::dispatchGuestNow(core, core.pc);
   entered_ = true;
   const bool fieldPassed =
       result.reason == psx::cpu::ExecutionExitReason::FrameBoundary ||

@@ -13,6 +13,7 @@
 #include "game.h"
 #include "host_turn.h"
 #include "logic_frame.h"
+#include "guest_call.h"
 #include "native_dispatch.h"
 
 #include <cstdlib>
@@ -25,8 +26,7 @@ FrameDriver::FrameDriver(Game &game, ExecuteSlice execute)
     : game_(game), execute_(std::move(execute)) {}
 
 psx::cpu::ExecutionResult FrameDriver::executeHostTurn(Core &core, std::uint32_t address) {
-  return psx::cpu::dispatchGuestUntilExit(
-      core, address, psx::cpu::ExecutionBudget::currentTurn(core));
+  return psx::cpu::dispatchGuestUntilExitNow(core, address);
 }
 
 void FrameDriver::installOverrides() {
