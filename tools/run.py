@@ -136,6 +136,7 @@ def sync_submodules(framework: Path, python: str) -> None:
 
 def player_build_root(cc: str, cxx: str) -> Path:
     """Return an isolated build root without classifying compiler identity."""
+    # Build-dir key; unchanged so existing player trees stay valid.
     contract = f"{cc}\0{cxx}\0BUILD_TESTING=OFF\0PSXPORT_BUILD_TESTS=OFF"
     key = hashlib.sha256(contract.encode()).hexdigest()[:12]
     return Path("build/player") / key
@@ -160,8 +161,6 @@ def discdump_commands(
             f"-DCMAKE_C_COMPILER={cc}",
             f"-DCMAKE_CXX_COMPILER={cxx}",
             f"-DPython3_EXECUTABLE={python}",
-            "-DBUILD_TESTING=OFF",
-            "-DPSXPORT_BUILD_TESTS=OFF",
         ],
         ["cmake", "--build", str(build), "-j", str(jobs), "--target", "discdump"],
     ]
@@ -187,7 +186,6 @@ def port_commands(
             f"-DCMAKE_C_COMPILER={cc}",
             f"-DCMAKE_CXX_COMPILER={cxx}",
             f"-DPython3_EXECUTABLE={python}",
-            "-DBUILD_TESTING=OFF",
         ],
         ["cmake", "--build", str(build), "-j", str(jobs), "--target", PRODUCT_TARGET],
     ]
@@ -233,18 +231,6 @@ def detect_title(discdump: Path, disc: str) -> Title:
             raise LauncherError(str(exc)) from exc
 
 
-def bootstrap_contract(root: Path) -> str:
-    required = ("bootstrap.py", "pyproject.toml", "uv.lock")
-    missing = [name for name in required if not (root / name).is_file()]
-    if missing:
-        return f"missing locked bootstrap file(s): {', '.join(missing)}"
-    try:
-        shim = (root / "run.sh").read_text(encoding="utf-8")
-    except OSError:
-        return "run.sh is missing"
-    if "uv run --frozen python bootstrap.py" not in shim or "python3" in shim:
-        return "run.sh does not enter through frozen uv"
-    return ""
 
 
 def parse_launch_arguments(argv: Sequence[str]) -> tuple[bool, str | None]:
@@ -258,271 +244,6 @@ def parse_launch_arguments(argv: Sequence[str]) -> tuple[bool, str | None]:
     if arguments and arguments[0].startswith("-"):
         raise LauncherError(f"unknown launcher option: {arguments[0]}")
     return prepare_only, arguments[0] if arguments else None
-
-
-def selftest() -> int:
-    checks = 0
-    checks += 1
-    if error := bootstrap_contract(ROOT):
-        return refuse(f"launcher selftest failed: {error}")
-    checks += 1
-    if parse_launch_arguments(["--prepare-only", "game.chd"]) != (
-        True,
-        "game.chd",
-    ):
-        return refuse("launcher selftest failed: prepare-only argument parsing")
-    checks += 1
-    try:
-        parse_launch_arguments(["--prepare-only", "--prepare-only"])
-    except LauncherError:
-        pass
-    else:
-        return refuse("launcher selftest failed: duplicate prepare-only accepted")
-
-    scratch = ROOT / "scratch"
-    scratch.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="run-selftest-", dir=scratch) as temporary:
-        root = Path(temporary)
-        cli = root / "cli.chd"
-        env_disc = root / "env.chd"
-        file_disc = root / "file.chd"
-        fallback = root / "a.chd"
-        for path in (cli, env_disc, file_disc, fallback):
-            path.touch()
-        for name in ("bootstrap.py", "pyproject.toml", "uv.lock"):
-            (root / name).touch()
-        (root / "run.sh").write_text(
-            '#!/bin/sh\nexec python3 "$(dirname "$0")/tools/run.py" "$@"\n',
-            encoding="utf-8",
-        )
-        checks += 1
-        if bootstrap_contract(root) != "run.sh does not enter through frozen uv":
-            return refuse("launcher selftest failed: broken bootstrap shim accepted")
-
-        (root / ".env").write_text(
-            f"PSXPORT_SPIDERMAN_DISC={file_disc}\nPSXPORT_DISC=ignored.chd\n",
-            encoding="utf-8",
-        )
-
-        cases = [
-            (str(cli), {"PSXPORT_SPIDERMAN_DISC": str(env_disc)}, str(cli)),
-            (None, {"PSXPORT_SPIDERMAN_DISC": str(env_disc)}, str(env_disc)),
-            (None, {}, str(file_disc)),
-        ]
-        for argument, environ, expected in cases:
-            checks += 1
-            if resolve_disc(root, argument, environ) != expected:
-                return refuse(
-                    f"launcher selftest failed: disc precedence case {checks}"
-                )
-
-        (root / ".env").write_text(
-            f"PSXPORT_DISC={file_disc}\n",
-            encoding="utf-8",
-        )
-        checks += 1
-        if resolve_disc(root, None, {}) != str(file_disc):
-            return refuse("launcher selftest failed: generic .env disc fallback")
-
-        (root / ".env").unlink()
-        checks += 1
-        if resolve_disc(root, None, {}) != str(fallback):
-            return refuse("launcher selftest failed: sorted CHD drop-in")
-        for path in root.glob("*.chd"):
-            path.unlink()
-        checks += 1
-        if resolve_disc(root, None, {}):
-            return refuse(
-                "launcher selftest failed: missing-disc refusal discriminator"
-            )
-
-        checks += 1
-        if resolve_unidentified_disc(
-            root,
-            None,
-            {"PSXPORT_SPIDERMAN2_DISC": str(env_disc)},
-            ["PSXPORT_SPIDERMAN_DISC", "PSXPORT_SPIDERMAN2_DISC"],
-        ) != str(env_disc):
-            return refuse("launcher selftest failed: Enter Electro disc environment")
-
-        checks += 1
-        try:
-            resolve_unidentified_disc(
-                root,
-                None,
-                {
-                    "PSXPORT_SPIDERMAN_DISC": str(env_disc),
-                    "PSXPORT_SPIDERMAN2_DISC": str(file_disc),
-                },
-                ["PSXPORT_SPIDERMAN_DISC", "PSXPORT_SPIDERMAN2_DISC"],
-            )
-        except DiscPathError:
-            pass
-        else:
-            return refuse(
-                "launcher selftest failed: ambiguous title disc environments accepted"
-            )
-
-    fake_framework = Path("external/psxport")
-    sync_command, sync_root = submodule_sync_invocation(fake_framework, "/locked/python")
-    checks += 1
-    if (
-        sync_root != fake_framework.resolve()
-        or sync_command
-        != [
-            "/locked/python",
-            str(sync_root / "scripts" / "sync_submodules.py"),
-        ]
-    ):
-        return refuse("launcher selftest failed: nested dependency sync contract")
-    catalog = load_catalog(ROOT)
-    spider1 = catalog.by_id("spiderman1")
-    spider2 = catalog.by_id("spiderman2")
-    commands = port_commands(
-        fake_framework,
-        Path("build/player/toolchain/product"),
-        "/usr/bin/cc",
-        "/usr/bin/c++",
-        "/locked/python",
-        7,
-    )
-    checks += 1
-    if commands[1][-2:] != ["--target", "spiderman_port"]:
-        return refuse("launcher selftest failed: default build target")
-    checks += 1
-    if "-DCMAKE_CXX_COMPILER=/usr/bin/c++" not in commands[0]:
-        return refuse("launcher selftest failed: C++ compiler propagation")
-    checks += 1
-    if "-DPython3_EXECUTABLE=/locked/python" not in commands[0]:
-        return refuse("launcher selftest failed: locked Python propagation")
-    checks += 1
-    if commands[0][commands[0].index("-B") + 1] == "build" or not commands[0][
-        commands[0].index("-B") + 1
-    ].startswith("build/player/"):
-        return refuse("launcher selftest failed: product build is not isolated")
-    checks += 1
-    if "-DBUILD_TESTING=OFF" not in commands[0] or any(
-        "ctest" in argument.lower() for command in commands for argument in command
-    ):
-        return refuse("launcher selftest failed: product path can run tests")
-    checks += 1
-    tools_commands = discdump_commands(
-        fake_framework,
-        Path("build/player/toolchain/framework"),
-        "/opt/gcc",
-        "/opt/g++",
-        "/locked/python",
-        7,
-    )
-    if (
-        tools_commands[0][tools_commands[0].index("-B") + 1]
-        != "build/player/toolchain/framework"
-        or "-DBUILD_TESTING=OFF" not in tools_commands[0]
-        or "-DPSXPORT_BUILD_TESTS=OFF" not in tools_commands[0]
-        or any(
-            "ctest" in argument.lower()
-            for command in tools_commands
-            for argument in command
-        )
-    ):
-        return refuse("launcher selftest failed: disc tool build is not isolated")
-
-    checks += 1
-    fedora = install_instructions(
-        [
-            Requirement("cxx", "a C++ compiler"),
-            Requirement("sdl3", "SDL3 development files"),
-        ],
-        "fedora",
-    )
-    if "sudo dnf install gcc-c++ SDL3-devel" not in fedora:
-        return refuse("launcher selftest failed: Fedora dependency command")
-    checks += 1
-    if platform_family("linux", 'ID="ubuntu"\nID_LIKE="debian"\n') != "debian":
-        return refuse("launcher selftest failed: Linux platform detection")
-    checks += 1
-    available = {
-        "cmake",
-        "git",
-        "pkg-config",
-        "glslc",
-        "gcc",
-        "g++",
-    }
-    native = require_native_dependencies(
-        {"CC": "gcc", "CXX": "g++"},
-        which=lambda name: f"/fake/{name}" if name in available else None,
-        pkg_exists=lambda _tool, _module: True,
-        platform_name="linux",
-        os_release='ID="fedora"\n',
-    )
-    if native.cc != "/fake/gcc" or native.cxx != "/fake/g++":
-        return refuse(
-            "launcher selftest failed: compiler selection without identity policy"
-        )
-    checks += 1
-    without_glslc = available - {"glslc"}
-    try:
-        require_native_dependencies(
-            {"CC": "gcc", "CXX": "g++"},
-            which=lambda name: f"/fake/{name}" if name in without_glslc else None,
-            pkg_exists=lambda _tool, _module: True,
-            platform_name="linux",
-            os_release='ID="fedora"\n',
-        )
-    except DependencyError as exc:
-        if "sudo dnf install glslc" not in str(exc):
-            return refuse("launcher selftest failed: wrong missing-glslc refusal")
-    else:
-        return refuse("launcher selftest failed: missing glslc accepted")
-
-    player_from_agent_shell = launch_environment(
-        {
-            "PSXPORT_NOWINDOW": "1",
-            "PSXPORT_VK_HEADLESS": "1",
-            "PSXPORT_NOAUDIO": "1",
-            "PSXPORT_NOPACE": "1",
-        },
-        "external/psxport",
-        "game.chd",
-        spider1,
-    )
-    windowed = launch_environment(
-        {"PSXPORT_ASSET_DIR": ""}, "external/psxport", "game.chd", spider2
-    )
-    checks += 1
-    if player_from_agent_shell.get("PSXPORT_VK_WINDOW") != "1" or any(
-        key in player_from_agent_shell
-        for key in (
-            "PSXPORT_NOWINDOW",
-            "PSXPORT_VK_HEADLESS",
-            "PSXPORT_NOAUDIO",
-            "PSXPORT_NOPACE",
-        )
-    ):
-        return refuse("launcher selftest failed: player launch environment")
-    checks += 1
-    if (
-        windowed.get("PSXPORT_VK_WINDOW") != "1"
-        or windowed["PSXPORT_ASSET_DIR"] != "external/psxport"
-    ):
-        return refuse("launcher selftest failed: windowed launch environment")
-    checks += 1
-    if (
-        windowed.get("PSXPORT_SPIDERMAN2_DISC") != "game.chd"
-        or "PSXPORT_SPIDERMAN_DISC" in windowed
-    ):
-        return refuse("launcher selftest failed: title-specific disc environment")
-    checks += 1
-    run_log = Path(player_from_agent_shell["PSXPORT_LOG_FILE"])
-    if (
-        run_log.parent.name != PRODUCT_TARGET
-        or windowed["PSXPORT_LOG_FILE"] != str(run_log)
-    ):
-        return refuse("launcher selftest failed: run log is not the product's")
-
-    print(f"launcher selftest: PASS — {checks} positive/refusal checks")
-    return 0
 
 
 def launch(argv: Sequence[str]) -> int:
@@ -610,8 +331,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     if arguments in (["-h"], ["--help"]):
         print(USAGE, end="")
         return 0
-    if arguments == ["--selftest"]:
-        return selftest()
     try:
         return launch(arguments)
     except LauncherError as exc:

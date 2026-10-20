@@ -38,8 +38,8 @@ Product path: `run.sh` → the framework main (`psxport_add_product`, target `sp
 | `enterelectro::Runtime` | `titles/spiderman2/runtime.*` | The `submitFrame` override, the frame driver, the run report |
 | `enterelectro::FrameDriver` | `titles/spiderman2/frame_driver.*` | Enters crt0 at the admitted entry; one budgeted turn and one fence per host step, presented if `submitFrame` ran |
 | facts | `titles/spiderman2/guest_facts.h` | `submitFrame`, VSync and its counter, pad buffers |
-| tests | `tests/` | Each title's owners through the shipping sources (`tests/spiderman1/`, `tests/spiderman2/`), the catalog, mesh contracts, link isolation, the picker |
-| tools | `tools/` | Launcher, provisioning, title catalog, the verifier, `policy/accepted.txt` |
+| tests | `tests/` | Each title's owners through the shipping sources, the catalog, mesh contracts, link isolation, the picker |
+| tools | `tools/` | Launcher, provisioning, title catalog |
 
 ## The frame turn
 

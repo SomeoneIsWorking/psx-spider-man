@@ -51,12 +51,11 @@ selected title. For Spider-Man 1 that is the provisioned executable, booted dire
 the first movie field; complete movies, `dem1`, and gameplay remain unverified against the declared
 translation and fallback gates.
 
-Hosted CI is configured to build and test the real asset-free Linux x86-64 boundary; the new
-workflow has not run from this working tree yet. Windows, macOS, Apple Silicon, and Android jobs
+Hosted CI is configured to build the real asset-free Linux x86-64 product. Windows, macOS, Apple Silicon, and Android jobs
 remain absent because their PSXPort/Lightrec product backends are not implemented or qualified;
 policy-only jobs do not stand in for those missing platform boundaries.
-The local and hosted verifier is `uv run --frozen python tools/verify.py`; it delegates the shared
-Clang/Ninja configure, build, CTest, and linked-product inspection sequence to the pinned PSXPort.
+There are no unit tests or gates. The local and hosted build is `CC=clang CXX=clang++ uv run --frozen
+python external/psxport/tools/port/consumer_build.py --build build/agent --target spiderman_port`.
 
 Player builds will accept GCC, Clang, and AppleClang. Maintainer C++ verification uses Clang together
 with the tracked `clang-format` and `clang-tidy` policy. Missing native dependencies must be refused

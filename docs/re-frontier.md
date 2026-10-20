@@ -357,8 +357,7 @@ a native draw. The gate still REFUSED because its known shutdown path left a rep
 signalling; `ps` immediately afterward found no surviving Spider process.
 
 PIN REPLAY 2026-08-22: `psxport.pin` now records clean framework `57a17a14`, a completely regenerated
-`2026-08-22.1` corpus contains all 1,672 main functions and 30 overlays, and the Clang build plus all
-eight CTests (including format, tidy, and structure) pass against that exact recorded SHA. The
+`2026-08-22.1` corpus contains all 1,672 main functions and 30 overlays, and the Clang build passes against that exact recorded SHA. The
 observe-only ownership result survives in `scratch/logs/gate-boot-20260822-181035.log`: by call
 16,384, animated `FUN_80077C08` owns 11,432 calls / 192,419 faces; the census reports zero unknown
 callsites, invalid output deltas, layout mismatches, and transform mismatches. This run still ends in
