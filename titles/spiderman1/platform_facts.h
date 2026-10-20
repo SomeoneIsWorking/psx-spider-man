@@ -61,18 +61,7 @@ inline constexpr uint32_t guestDmaCallbackTable = 0x800B4388u;
 inline constexpr GuestAddressRange overlayHeapArena{0x000C65E4u, 0x001FE000u};
 
 // SLUS_008.75 crt0 0x8008739C; it calls main 0x8002C354 after libc init.
-inline constexpr psx::game::Crt0Image crt0Image{
-    .bss = {0x800B5994u, 0x800C65D4u},
-    .stackTopWordAddress = 0x800B3E70u,
-    .stackReserveWordAddress = 0x800B3E6Cu,
-    .heapBase = 0x800C65D4u,
-    .heapSizeStoreAddress = 0x800B1240u,
-    .heapBaseStoreAddress = 0x800B123Cu,
-    .globalPointer = 0x800B47F4u,
-    .libcInitEntry = 0x8008DC98u,
-    .crt0Entry = 0x8008739Cu,
-    .stackBias = {.declared = true, .bytes = -8}, // crt0 0x800873CC addi v0,v0,-8
-};
+inline constexpr psx::game::Crt0Image crt0Image{.entry = 0x8008739Cu};
 inline constexpr uint32_t gameMainEntry = 0x8002C354u;
 
 // libetc VSync; VSync(-1) at 0x80084C44 loads the VBlank count directly.

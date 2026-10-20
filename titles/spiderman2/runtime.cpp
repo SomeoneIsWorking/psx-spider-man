@@ -15,7 +15,7 @@ Runtime::Runtime()
 
 void Runtime::registerOverrides(Game &game) {
   spider::Runtime::registerOverrides(game);
-  FrameDriver::from(game.core).installOverrides();
+  game.frameDriverAs<FrameDriver>().installOverrides();
 }
 
 std::unique_ptr<psx::game::FrameDriver> Runtime::createFrameDriver(Game &game) {
@@ -23,7 +23,7 @@ std::unique_ptr<psx::game::FrameDriver> Runtime::createFrameDriver(Game &game) {
 }
 
 void Runtime::reportRun(Core &core) const {
-  const FrameDriver &driver = FrameDriver::from(core);
+  const FrameDriver &driver = core.game->frameDriverAs<FrameDriver>();
   lucent::info("frame",
                "Spider-Man 2 run: {} presented field(s), {} waited field(s)",
                driver.presentedFrames(),

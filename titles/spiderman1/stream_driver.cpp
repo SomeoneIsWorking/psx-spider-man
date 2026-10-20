@@ -3,7 +3,6 @@
 
 #include "cdc_state.h"
 #include "core.h"
-#include "execution/guest_execution.h"
 #include "execution_control.h"
 #include "game.h"
 #include "native_dispatch.h"
@@ -129,14 +128,14 @@ void StreamDriver::stGetNext(Core *core) {
 }
 
 void StreamDriver::poll(Core &core) {
-  if (!callOriginalOrPropagate(core, stGetNextAddress)) {
+  if (!psx::cpu::callOriginalOrPropagate(core, stGetNextAddress)) {
     return;
   }
   // Non-zero means no sector ready: pump once and ask again, never loop in an override.
   if (core.r[2] != 0) {
     // The data-ready interrupt belongs to the guest's source-2 handler, so there is no host pump;
     // the drive clock advances from the guest instruction clock.
-    if (core.executionControl().pending() || !callOriginalOrPropagate(core, stGetNextAddress)) {
+    if (core.executionControl().pending() || !psx::cpu::callOriginalOrPropagate(core, stGetNextAddress)) {
       return;
     }
     if (core.r[2] != 0) {

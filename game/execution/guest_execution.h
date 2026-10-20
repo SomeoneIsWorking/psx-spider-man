@@ -22,11 +22,6 @@ private:
   Core &core_;
 };
 
-// Runs `address` to its return; false when a bounded exit is propagating to the frame driver.
-bool dispatchGuestOrPropagate(Core &core, std::uint32_t address);
-// The overridden guest body at `address`; false when a bounded exit is propagating.
-bool callOriginalOrPropagate(Core &core, std::uint32_t address);
-
 bool reportExecutionResult(const Core &core,
                            const psx::cpu::ExecutionResult &result,
                            std::string_view owner);

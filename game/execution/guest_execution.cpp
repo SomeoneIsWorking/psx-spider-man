@@ -11,7 +11,10 @@ namespace spider {
 GuestExecution::GuestExecution(Core &core) : core_(core) {}
 
 psx::cpu::ExecutionResult GuestExecution::enter(std::uint32_t address) {
-  return psx::cpu::dispatchGuest(core_, address, psx::cpu::ExecutionBudget::currentTurn(core_));
+  return psx::cpu::dispatchGuest(core_,
+                                 address,
+                                 psx::cpu::ExecutionBudget::currentTurn(core_),
+                                 "spider::GuestExecution::enter");
 }
 
 psx::cpu::ExecutionResult GuestExecution::resumeAt(std::uint32_t address) {
@@ -21,16 +24,6 @@ psx::cpu::ExecutionResult GuestExecution::resumeAt(std::uint32_t address) {
 
 psx::cpu::ExecutionResult GuestExecution::callOriginal(std::uint32_t address) {
   return psx::cpu::callOriginal(core_, address, psx::cpu::ExecutionBudget::currentTurn(core_));
-}
-
-bool dispatchGuestOrPropagate(Core &core, std::uint32_t address) {
-  return psx::cpu::completeOrPropagate(
-      core, psx::cpu::dispatchGuest(core, address, psx::cpu::ExecutionBudget::currentTurn(core)));
-}
-
-bool callOriginalOrPropagate(Core &core, std::uint32_t address) {
-  return psx::cpu::completeOrPropagate(
-      core, psx::cpu::callOriginal(core, address, psx::cpu::ExecutionBudget::currentTurn(core)));
 }
 
 bool reportExecutionResult(const Core &core,
