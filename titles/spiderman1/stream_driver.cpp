@@ -41,7 +41,7 @@ StreamDriver::RingObservation StreamDriver::observeRing() const {
   ring.consumer = core_.mem_r32(ringConsumerIndexAddress);
   ring.writeIndex = core_.mem_r32(ringWriteIndexAddress);
   ring.cdIrqSequence = core_.game->cdc.irq_sequence;
-  ring.cdIrqType = core_.game->cdc.currentIrqType();
+  ring.cdIrqType = static_cast<uint32_t>(core_.game->cdc.currentIrqType());
   ring.cdDataRead = core_.game->cdc.data_rd;
   ring.frameStartStatus = observedStatus(core_, ring, ring.frameStart);
   ring.consumerStatus = observedStatus(core_, ring, ring.consumer);
@@ -68,7 +68,7 @@ StreamDriver::ProducerObservation StreamDriver::observeProducer() const {
   observation.stagedFirst = core_.mem_r8(cdStagedResponse);
   observation.stagedAltFirst = core_.mem_r8(cdStagedResponseAlt);
   observation.cdcIrqSequence = static_cast<uint32_t>(core_.game->cdc.irq_sequence);
-  observation.cdcIrqType = core_.game->cdc.currentIrqType();
+  observation.cdcIrqType = static_cast<uint32_t>(core_.game->cdc.currentIrqType());
   observation.cdcIrqEdge = core_.game->cdc.irq_edge;
   observation.cdcDataRead = core_.game->cdc.data_rd;
   observation.cdcDataAvailable = core_.game->cdc.data_n;
