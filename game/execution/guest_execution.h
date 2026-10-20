@@ -2,26 +2,13 @@
 
 #include "execution_exit.h"
 
-#include <cstdint>
 #include <string_view>
 
 class Core;
 
 namespace spider {
 
-// Guest execution on one Core under the current turn's budget.
-class GuestExecution {
-public:
-  explicit GuestExecution(Core &core);
-
-  psx::cpu::ExecutionResult enter(std::uint32_t address);
-  psx::cpu::ExecutionResult resumeAt(std::uint32_t address);
-  psx::cpu::ExecutionResult callOriginal(std::uint32_t address);
-
-private:
-  Core &core_;
-};
-
+// Logs a turn that stopped without returning; true when it returned or the process exited.
 bool reportExecutionResult(const Core &core,
                            const psx::cpu::ExecutionResult &result,
                            std::string_view owner);

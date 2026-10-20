@@ -24,7 +24,7 @@ Product path: `run.sh` → the framework main (`psxport_add_product`, target `sp
 | Owner | Path | What it owns |
 |---|---|---|
 | `spider::Runtime` | `game/runtime/runtime.*` | The shared `GameRuntime`: `StockVSync`, `StockPadBuffers`, Record, the stock aspect policy |
-| `spider::GuestExecution` | `game/execution/guest_execution.*` | One Core's entry into, resumption at and scoped original call through the executor; `dispatchGuestOrPropagate`, `callOriginalOrPropagate` |
+| `spider::reportExecutionResult` | `game/execution/guest_execution.*` | The report of a guest turn that stopped without returning; turns run through psxport's `dispatchGuestNow`/`dispatchGuestUntilExitNow` |
 | `spider::Catalog`, `createCatalog` | `game/product/catalog.*` | Both identities and runtimes, provisioned under `scratch/assets` |
 | `spider::render::*` | `game/render/` | Render contracts not linked by the product (`spider_render_contracts` and the `mesh_*` tests): frame envelope, libgpu env records, scene ids, mesh decode |
 | `spider1::Runtime` | `titles/spiderman1/runtime.*` | `startProgram` (crt0, retail main), `StockLibgte`/`StockLibcd`/`StockDmaCallbacks` bindings, the session, overlay landings |
