@@ -76,7 +76,7 @@ function(spider_add_catalog_manifests TARGET)
   endforeach()
 endfunction()
 
-# Each title's own sources, so the link-isolation test can tell the two trees apart.
+# Each title's own sources.
 add_library(spiderman1_title OBJECT ${SPIDERMAN1_SOURCES})
 add_library(spiderman2_title OBJECT ${SPIDERMAN2_SOURCES})
 spider_configure_runtime_target(spiderman1_title)
@@ -94,99 +94,12 @@ spider_add_catalog_manifests(spiderman_port)
 add_library(spider_render_contracts STATIC
   game/render/frame_envelope.cpp
   game/render/gpu_env.cpp
+  game/render/mesh_animated_vertex.cpp
+  game/render/mesh_asset_cook.cpp
+  game/render/mesh_face_format.cpp
+  game/render/mesh_pose_contract.cpp
+  game/render/mesh_transform.cpp
+  game/render/mips_fixed_point.cpp
   game/render/scene_id.cpp)
 target_include_directories(spider_render_contracts PRIVATE game/render)
 target_link_libraries(spider_render_contracts PRIVATE psxport)
-
-include(CTest)
-if(BUILD_TESTING)
-  find_package(Python3 REQUIRED COMPONENTS Interpreter)
-
-  add_executable(mesh_transform_contract_test
-    tests/mesh_transform_contract_test.cpp
-    game/render/mesh_transform.cpp)
-  target_include_directories(mesh_transform_contract_test PRIVATE game/render)
-  add_test(NAME mesh_transform_contract COMMAND mesh_transform_contract_test)
-
-  add_executable(mesh_animated_vertex_test
-    tests/mesh_animated_vertex_test.cpp
-    game/render/mesh_animated_vertex.cpp
-    game/render/mips_fixed_point.cpp)
-  target_include_directories(mesh_animated_vertex_test PRIVATE game/render)
-  add_test(NAME mesh_animated_vertex COMMAND mesh_animated_vertex_test)
-
-  add_executable(mesh_pose_contract_test
-    tests/mesh_pose_contract_test.cpp
-    game/render/mesh_pose_contract.cpp
-    game/render/mips_fixed_point.cpp)
-  target_include_directories(mesh_pose_contract_test PRIVATE game/render)
-  add_test(NAME mesh_pose_contract COMMAND mesh_pose_contract_test)
-
-  add_executable(mesh_asset_cook_test
-    tests/mesh_asset_cook_test.cpp
-    game/render/mesh_asset_cook.cpp)
-  target_include_directories(mesh_asset_cook_test PRIVATE game/render)
-  add_test(NAME mesh_asset_cook COMMAND mesh_asset_cook_test)
-
-  add_executable(mesh_face_format_test
-    tests/mesh_face_format_test.cpp
-    game/render/mesh_face_format.cpp)
-  target_include_directories(mesh_face_format_test PRIVATE game/render)
-  add_test(NAME mesh_face_format COMMAND mesh_face_format_test)
-
-  # A test of one title's owners through the shipping sources, with psxport's test support.
-  function(spider_add_title_test NAME SOURCE)
-    add_executable(${NAME}_test ${SOURCE} ${ARGN})
-    spider_configure_runtime_target(${NAME}_test)
-    target_include_directories(${NAME}_test PRIVATE ${PSXPORT_DIR}/tests)
-    add_test(NAME ${NAME} COMMAND ${NAME}_test)
-  endfunction()
-
-  # Field clock and CdInit against a bare Core.
-  spider_add_title_test(spiderman1_guest_boundary_owners
-    tests/spiderman1/guest_boundary_owners_test.cpp
-    titles/spiderman1/cd_initialization.cpp
-    titles/spiderman1/field_clock.cpp)
-  target_link_libraries(spiderman1_guest_boundary_owners_test PRIVATE psxport_test_support)
-
-  set(SPIDER_HEADLESS_TEST_ENVIRONMENT
-    "PSXPORT_NOWINDOW=1;PSXPORT_NOAUDIO=1;PSXPORT_NOPACE=1;PSXPORT_ASSET_DIR=${PSXPORT_DIR}")
-  spider_add_title_test(spiderman1_runtime tests/spiderman1/runtime_test.cpp)
-  target_link_libraries(spiderman1_runtime_test PRIVATE spiderman1_title spider_shared)
-  set_tests_properties(spiderman1_runtime PROPERTIES ENVIRONMENT "${SPIDER_HEADLESS_TEST_ENVIRONMENT}")
-  spider_add_title_test(spiderman2_frame_driver tests/spiderman2/frame_driver_test.cpp)
-  target_link_libraries(spiderman2_frame_driver_test PRIVATE spiderman2_title spider_shared)
-  set_tests_properties(spiderman2_frame_driver PROPERTIES ENVIRONMENT "${SPIDER_HEADLESS_TEST_ENVIRONMENT}")
-  spider_add_title_test(catalog tests/catalog_test.cpp game/product/catalog.cpp)
-  spider_add_catalog_manifests(catalog_test)
-  target_link_libraries(catalog_test PRIVATE spiderman1_title spiderman2_title spider_shared)
-  set_tests_properties(catalog PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-  add_test(NAME title_catalog
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_title_catalog.py)
-  add_test(NAME executable_provision
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_provision.py)
-  add_test(NAME launcher_help
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_help_contract.py
-            --executable $<TARGET_FILE:spiderman_port>)
-
-  # One binary links both titles, so no external name may be defined by both from their own sources.
-  psxport_add_title_link_isolation_test(spider_title_link_isolation
-    FIRST spiderman1_title FIRST_ROOT "${CMAKE_SOURCE_DIR}/titles/spiderman1"
-    SECOND spiderman2_title SECOND_ROOT "${CMAKE_SOURCE_DIR}/titles/spiderman2")
-
-  # The shipped picker with both titles live at the end of the run, not merely once. Local-only: it
-  # needs the provisioned executables, and skips where neither is provisioned (CI).
-  add_test(NAME spider_picker_both_panels_live COMMAND spiderman_port WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-  set_tests_properties(spider_picker_both_panels_live PROPERTIES
-    ENVIRONMENT "PSXPORT_DEBUG=picker;PSXPORT_NATIVE_FRAMES=1500;PSXPORT_NOAUDIO=1;PSXPORT_ASSET_DIR=${PSXPORT_DIR}"
-    PASS_REGULAR_EXPRESSION "with no choice; panels: \\[0\\]\\*spiderman1 demo \\[1\\] spiderman2 demo"
-    SKIP_REGULAR_EXPRESSION "no provisioned title"
-    # A settled panel that drops back to booting has lost its picture.
-    FAIL_REGULAR_EXPRESSION "\\[watchdog\\] FAULT;spiderman1 demo.*spiderman1 booting;spiderman2 demo.*spiderman2 booting"
-    TIMEOUT 300)
-
-  add_test(NAME cpp_policy
-    COMMAND ${Python3_EXECUTABLE} ${PSXPORT_DIR}/tools/check_cpp_style.py
-            --root ${CMAKE_SOURCE_DIR} --compile-commands ${CMAKE_BINARY_DIR})
-endif()

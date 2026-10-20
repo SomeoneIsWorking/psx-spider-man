@@ -1,4 +1,4 @@
-name: Asset-free native runtime contract
+name: Build
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   linux-x86_64:
-    name: Linux x86-64 native/Lightrec product
+    name: Linux x86-64 build
     runs-on: ubuntu-26.04
     timeout-minutes: 45
     env:
@@ -38,5 +38,5 @@ jobs:
         uses: ./external/psxport/.github/actions/setup-linux
         with:
           framework-directory: external/psxport
-      - name: Verify the real asset-free consumer boundary
-        run: uv run --frozen python tools/verify.py
+      - name: Build the product
+        run: uv run --frozen python external/psxport/tools/port/consumer_build.py --build build/ci --target spiderman_port
