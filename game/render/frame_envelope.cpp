@@ -1,6 +1,7 @@
 #include "frame_envelope.h"
 #include "core.h"
 #include "game.h"
+#include "gpu_device.h"
 #include "gpu_env.h"
 #include "gpu_ports.h"
 #include <lucent/log.h>
@@ -52,18 +53,18 @@ void FrameEnvelope::produce(Core *c, const DrawEnv &draw, const DispEnv &disp) {
   }
 
   // PutDrawEnv: six state words in FUN_80082770's order (DR_ENV +0x04 upward).
-  psx::gpu::gp0Write(*c, draw.areaTopLeftWord(c));
-  psx::gpu::gp0Write(*c, draw.areaBottomRightWord(c));
-  psx::gpu::gp0Write(*c, draw.drawOffsetWord());
-  psx::gpu::gp0Write(*c, draw.drawModeWord());
-  psx::gpu::gp0Write(*c, draw.textureWindowWord());
-  psx::gpu::gp0Write(*c, DrawEnv::maskWord());
+  c->gpuDevice().gp0(draw.areaTopLeftWord(c));
+  c->gpuDevice().gp0(draw.areaBottomRightWord(c));
+  c->gpuDevice().gp0(draw.drawOffsetWord());
+  c->gpuDevice().gp0(draw.drawModeWord());
+  c->gpuDevice().gp0(draw.textureWindowWord());
+  c->gpuDevice().gp0(DrawEnv::maskWord());
 
   // Then the clear, the only part that puts colour on screen.
   uint32_t bg[3];
   const int nbg = draw.backgroundClearWords(c, bg);
   for (int i = 0; i < nbg; ++i) {
-    psx::gpu::gp0Write(*c, bg[i]);
+    c->gpuDevice().gp0(bg[i]);
   }
   if (nbg) {
     ++mClears;
