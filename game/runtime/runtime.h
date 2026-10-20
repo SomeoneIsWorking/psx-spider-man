@@ -13,7 +13,7 @@ class Runtime : public psx::game::GameRuntime {
 public:
   void registerOverrides(Game &game) override;
   void deliverPad(Core &core, const psx::input::PadDelivery &delivery) override;
-  const GuestWidescreenProjection *guestWidescreenProjection() const override;
+  const psx::present::GuestWidescreenProjection *guestWidescreenProjection() const override;
 
 protected:
   Runtime(const psx::hle::StockVSync &vsync, const psx::input::StockPadBuffers::Layout &pad);
@@ -21,7 +21,7 @@ protected:
 private:
   psx::hle::StockVSync vsync_;
   psx::input::StockPadBuffers pad_;
-  GuestWidescreenProjection aspectPolicy_;
+  psx::present::GuestWidescreenProjection aspectPolicy_;
 };
 
 } // namespace spider
