@@ -26,30 +26,25 @@ std::string readGuestName(Core &core, std::uint32_t address) {
 
 } // namespace
 
-bool LevelWarp::inLevelTable(Core &core, std::string_view name) {
-  for (std::uint32_t row = 0; row < kLevelTableRows; ++row) {
-    const std::uint32_t namePointer = core.mem_r32(kLevelTable + row * kLevelTableRowBytes + 4u);
-    const std::string rowName = readGuestName(core, namePointer);
-    if (rowName.empty()) {
-      return false;
-    }
-    if (rowName == name) {
-      return true;
-    }
+int LevelWarp::tableCount(Core &core) {
+  int rows = 0;
+  while (rows < static_cast<int>(kLevelTableRows) && !tableName(core, rows).empty()) {
+    ++rows;
   }
-  return false;
+  return rows;
 }
 
-std::string LevelWarp::arm(Core &core, const psx::debug::CommandArgs &args) {
-  const std::string_view name = args.word(1);
-  if (name.empty()) {
-    return "usage: warp <level> (a level table name such as l1a2_t)";
+std::string LevelWarp::tableName(Core &core, int row) {
+  if (row < 0 || row >= static_cast<int>(kLevelTableRows)) {
+    return {};
   }
-  if (name.size() > kNameCapacity || !inLevelTable(core, name)) {
-    return lucent::format("refused: {} is not in the level table at 0x{:08X}", name, kLevelTable);
-  }
-  armed_ = std::string(name);
-  return lucent::format("ok: warp armed for {}", name);
+  return readGuestName(
+      core, core.mem_r32(kLevelTable + static_cast<std::uint32_t>(row) * kLevelTableRowBytes + 4u));
+}
+
+std::string LevelWarp::arm(std::string name) {
+  armed_ = std::move(name);
+  return lucent::format("ok: warp armed for {}", *armed_);
 }
 
 std::optional<std::string> LevelWarp::apply(Core &core) {

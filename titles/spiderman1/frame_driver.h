@@ -29,7 +29,7 @@ public:
   void beginGuest(Core &core);
   void stepFrame(Core &core, std::uint32_t frame) override;
   // Arms a `warp <level>` request; a later step raises it through the guest's own level route.
-  std::string armWarp(Core &core, const psx::debug::CommandArgs &args);
+  std::string armWarp(std::string level);
 
 private:
   // A stop at a measured boundary, serviced as one display field; false means it is not one.

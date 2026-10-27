@@ -1,7 +1,5 @@
 #pragma once
 
-#include "command_args.h"
-
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -30,15 +28,17 @@ public:
   static constexpr std::uint32_t kFieldWaitEnd = 0x8005E77Cu;
   static constexpr std::array<std::uint32_t, 2> kLoopFieldWaitReturns{0x8002C274u, 0x8002C294u};
 
-  // The returned text answers the client.
-  std::string arm(Core &core, const psx::debug::CommandArgs &args);
+  // The level table's names in row order, read from guest memory; the table ends at its first empty
+  // name.
+  static int tableCount(Core &core);
+  static std::string tableName(Core &core, int row);
+  // Arms a name from the level table; the returned text answers the client.
+  std::string arm(std::string name);
   // Raises the armed request when the guest stands in the gameplay loop's field wait with no exit
   // of its own pending; returns the level applied.
   std::optional<std::string> apply(Core &core);
 
 private:
-  static bool inLevelTable(Core &core, std::string_view name);
-
   std::optional<std::string> armed_;
 };
 

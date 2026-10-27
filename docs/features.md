@@ -47,5 +47,5 @@ title's own rows name `titles/<title>/`.
 
 | hop | joins | owner |
 |---|---|---|
-| 1 | psxport F-DEBUG.1 | `titles/spiderman1/runtime.cpp:Runtime::titleCommand` — `warp <level>`, a name from the level table at `0x800974A4` |
+| 1 | psxport F-DEBUG.1 | `titles/spiderman1/debug_menu.cpp:DebugMenu` — `warp <level>`, a name from the level table at `0x800974A4` |
 | 2 | psxport F-DEBUG.1 | `titles/spiderman1/level_warp.cpp:LevelWarp::apply` — level name and selector 3, the demo flag cleared, from `FUN_8002C174`'s field wait; retail main's level route loads it |
