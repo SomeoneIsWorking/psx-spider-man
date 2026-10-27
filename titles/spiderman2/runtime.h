@@ -1,6 +1,7 @@
 #pragma once
 
 #include "runtime/runtime.h"
+#include "title_debug_menu.h"
 
 namespace spider::enterelectro {
 
@@ -13,6 +14,13 @@ public:
   void registerOverrides(Game &game) override;
   std::unique_ptr<psx::game::FrameDriver> createFrameDriver(Game &game) override;
   void reportRun(Core &core) const override;
+  // No debug route reaches an Enter Electro screen yet.
+  const psx::game::TitleDebugMenu &debugMenu() const override {
+    return debugMenu_;
+  }
+
+private:
+  psx::game::TitleDebugMenu debugMenu_;
 };
 
 } // namespace spider::enterelectro

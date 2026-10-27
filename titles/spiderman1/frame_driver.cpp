@@ -42,8 +42,8 @@ void FrameDriver::beginGuest(Core &core) {
   core.pc = gameMainEntry;
 }
 
-std::string FrameDriver::armWarp(Core &core, const psx::debug::CommandArgs &args) {
-  return warp_.arm(core, args);
+std::string FrameDriver::armWarp(std::string level) {
+  return warp_.arm(std::move(level));
 }
 
 void FrameDriver::stepFrame(Core &core, std::uint32_t) {

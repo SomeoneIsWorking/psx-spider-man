@@ -30,6 +30,7 @@ Product path: `run.sh` → the framework main (`psxport_add_product`, target `sp
 | `spider1::Runtime` | `titles/spiderman1/runtime.*` | `startProgram` (crt0, retail main), `StockLibgte`/`StockLibcd`/`StockDmaCallbacks` bindings, the session, overlay landings |
 | `spider1::Session`, `session(core)` | `titles/spiderman1/session.*` | Per-Core state outside guest RAM: the `StreamDriver` |
 | `spider1::FrameDriver` | `titles/spiderman1/frame_driver.*` | Retail main as host turns through an injectable `ExecuteSlice`: the boundary each turn stopped at (`ResetGraph` VSync, the retail STR player's three VSyncs, a dry `StGetNext`, a spent budget) as one field and one fence; the CdInit, DMA-timeout and VSyncCallback overrides |
+| `spider1::DebugMenu` | `titles/spiderman1/debug_menu.*` | The title debug menu (psxport `TitleDebugMenu`): `warp <level>` over the guest level table's names |
 | `spider1::LevelWarp` | `titles/spiderman1/level_warp.*` | `warp <level>`: the level script's change-level exit, raised from the gameplay loop's field wait |
 | `spider1::StreamDriver` | `titles/spiderman1/stream_driver.*` | The `StGetNext` override: super-call, controller pump on a dry poll, the field that poll waited through |
 | `spider1::CdInitialization` | `titles/spiderman1/cd_initialization.*` | The retail `CdInit` body: four callback slots and the CD interrupt arm |
@@ -70,5 +71,5 @@ Product path: `run.sh` → the framework main (`psxport_add_product`, target `sp
 | Behaviour only one title has | that title's `Runtime` override or session under `titles/<title>/` |
 | A display field or presentation fence | the title's `FrameDriver`, and only there |
 | A native override | `psx::cpu::installNativeOverride` from the owning module's install |
-| A debug route to a level or screen | a `titleCommand` the title's frame driver applies at a frame boundary through the guest's own route |
+| A debug route to a level or screen | a verb in the title's `DebugMenu` (psxport `TitleDebugMenu`) the title's frame driver applies at a frame boundary through the guest's own route |
 | Executor, presentation, stock library mechanics | psxport |

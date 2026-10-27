@@ -7,8 +7,6 @@
 #include "spiderman1/platform_facts.h"
 #include "spiderman1/session.h"
 
-#include <cstring>
-
 namespace spider::spider1 {
 
 Runtime::Runtime()
@@ -38,14 +36,6 @@ std::unique_ptr<psx::game::TitleSessionState> Runtime::createSession(Game &game)
 
 std::unique_ptr<psx::game::FrameDriver> Runtime::createFrameDriver(Game &game) {
   return std::make_unique<FrameDriver>(game, FrameDriver::executeHostTurn);
-}
-
-bool Runtime::titleCommand(Core &core, const psx::game::TitleCommandLine &input, std::FILE *reply) {
-  if (std::strcmp(input.command, "warp") != 0) {
-    return false;
-  }
-  std::fprintf(reply, "%s\n", core.game->frameDriverAs<FrameDriver>().armWarp(core, input.args).c_str());
-  return true;
 }
 
 void Runtime::stockCdReadLanded(Core &core, const psx::cd::StockReadLanding &landing) {
