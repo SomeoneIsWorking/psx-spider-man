@@ -55,4 +55,4 @@ per-packet declaration, and Spider-Man has no 2D producer. The framework needs a
 then centres by the margin. The span attribution (`OtAttr`) records nothing on this path (`otattr` reports 0 spans).
 A title-side shift of the emitted packets by the margin would work but is a second layout owner beside the host's.
 
-Reproduction: `scratch/wide-edge/run.py --aspect 16x9 --at 8000|8800` through `heavy.py`.
+Reproduction: `scratch/wide-edge/run.py --aspect 16x9 --at 8000|8800`.
