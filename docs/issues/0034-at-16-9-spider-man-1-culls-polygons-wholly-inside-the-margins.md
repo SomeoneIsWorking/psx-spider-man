@@ -6,11 +6,11 @@ symptom: attract demo at 16:9 (684x240 Record canvas) draws geometry into both m
 state_items: S008
 tags: spiderman1,widescreen,culling,record
 created: 2026-10-15
-updated: 2026-10-15
+updated: 2026-10-29
 ---
 
 Reproduce: `spiderman_port` headless with `aspect=1`, `pick spiderman1`, then `warp l1a2_t` and a shot in gameplay
-(`scratch/restructure/smoke/sm1-169-final/f9000.ppm`), or a shot at frame 13500 (the Lizard
+(`scratch/restructure/smoke/sm1-169-final/f9000.ppm`; still shown on `f1e488b`, hidden, `ires=0`, frame 9000), or a shot at frame 13500 (the Lizard
 attract demo). The canvas is 684 wide and the retail centre 256 is kept, so the canvas widening works; the
 polygons in the margins are those the guest submitted because they cross x 0 or x 511.
 
@@ -25,3 +25,5 @@ bound moves the centre (OFX 342), which is the slide Record must not show.
 Proper fix: a native `FUN_8007C2AC` with a sign-extended left bound, and the publication from `FUN_80075D0C`
 widened symmetrically (planes from the 684 span, OFX kept at 256), both bound in `spider1::Runtime`. The
 deleted `Spider1Widescreen` widened right-only on the Gte path (issue 0025); it cannot be reused on Record.
+
+Until it is fixed the README carries no widescreen gameplay stills or 4:3-vs-16:9 comparison.
