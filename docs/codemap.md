@@ -8,6 +8,8 @@ Product path: `run.sh` → the framework main (`psxport_add_product`, target `sp
 `psx::host::ProductHost` over `spider::Catalog` (in-window picker; `pick spiderman1|spiderman2`) →
 `TitleSession` → the title's `Runtime` → its `FrameDriver::stepFrame` on psxport's Lightrec executor.
 
+Frame loop: not owned in either title. Each step runs retail main (Spider-Man `0x8002C354`, Enter Electro `0x80031F54`) to a libetc VSync, one field per wait (issue 0038).
+
 ## Placement rules
 
 - `titles/spiderman1/` holds what is measured out of `SLUS_008.75`, in namespace `spider::spider1`;
