@@ -472,9 +472,9 @@ fault proves no causal relationship between those events.
 - notes: The gameplay loop paces itself: FUN_80069154(1) spins on the VBlank counter at gp+0xCD0 for one field, then DrawSync(1), then submitFrame (0x80031EA4); FUN_80017940 does the same. submitFrame therefore does not end a turn. A turn ends at a libetc VSync wait or when the field's cycle budget is spent, and its one field presents if submitFrame ran inside it, otherwise rescans the last frame.
 
 ### EE-04 — Enter Electro intro STR stream
-- status: todo
+- status: done
 - deps: EE-03
 - evidence: After the logo, FUN_800773E8 calls the STR player FUN_8003035C (0x8007766C/0x80077688); it waits for its first frame through FUN_80030D78/FUN_80030D14 -> FUN_80093548, a StGetNext-like poll of the libstr ring at 0x800CE44C (slot state 2 = ready). The ring never fills: the screen stays black and the log reports a pending CD interrupt (I_STAT&I_MASK 0x004) no SysEnq element claims.
 - where: guest FUN_8003035C, FUN_80093548; the title's CD interrupt and stream delivery
-- gap: Trace the CdInit callback install and the CD stream read that feeds the ring, as Spider-Man 1 did in issues 0024/0026, and deliver its sectors.
+- gap: none. The ring is fed by ReadS through `StCdInterrupt` FUN_80091A34; a frame's last sector completes through the DMA3 callback 0x800986F4 in the libapi table 0x800C12B8, which `Runtime` binds as `StockDmaCallbacks` (issue 0039). Overlays read into heap 1 run through `guestCodeModuleWindow`.
 - notes: Every later screen, rendering ownership, widescreen, runtime modules and gameplay depend on this.

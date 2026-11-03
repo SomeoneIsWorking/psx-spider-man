@@ -11,15 +11,21 @@ namespace spider::enterelectro {
 Runtime::Runtime()
     : spider::Runtime(
           psx::hle::StockVSync({.entry = vsyncAddress, .queryCounter = libetcVblankCountAddress}),
-          padBuffers) {}
+          padBuffers),
+      dmaCallbacks_(guestDmaCallbackTable) {}
 
 void Runtime::registerOverrides(Game &game) {
   spider::Runtime::registerOverrides(game);
+  dmaCallbacks_.bind(game);
   game.frameDriverAs<FrameDriver>().installOverrides();
 }
 
 std::unique_ptr<psx::game::FrameDriver> Runtime::createFrameDriver(Game &game) {
   return std::make_unique<FrameDriver>(game);
+}
+
+GuestAddressRange Runtime::guestCodeModuleWindow() const {
+  return overlayHeapArena;
 }
 
 void Runtime::reportRun(Core &core) const {
