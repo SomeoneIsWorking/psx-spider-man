@@ -63,3 +63,11 @@ One attract DEMO level draws only its actors and the caption (`scratch/picker3/s
 the other DEMO levels draw their geometry (`sm2n/sheet.png`, `sm2p/sheet.png`). The device's VRAM for those frames
 also lacks the level geometry, so the guest never submits it; the present path is not at fault. Not traced
 further: next is the scene list of that level's OT against a level that draws, and the overlay at `0x8017CF40`.
+
+Fourth pass (2026-11-04, `scratch/picker4/ram1`, picker, hidden, unpaced, sink 3840x2160, ires 0, fps60 1):
+the actors-only DEMO (`sheet_b.png` b31..b38) runs under the overlay relocated at `0x80151528..0x8015FD28`
+(image 3, SHA-256 `8741e105...`, `run.log` 22:17:18); the DEMO levels that draw their city (b52..b69) run under
+`0x8017CF40..0x8018B740` (image 5). The black level's record holds 4 to 43 primitive groups, all actors and the
+caption. Not traced to a function this pass: next is decompiling the image-3 overlay (dumped from RAM
+at `0x80151528` during that DEMO) and reading why its level draw submits no city geometry.
+Spider-Man 1 shows the same picture: its first attract DEMO draws Spider-Man and a henchman on black (`scratch/picker4/w1/b_sm1.png`, `ram1/sheet_a.png` a09..a15), so the cause may be shared by both titles' level draw.
