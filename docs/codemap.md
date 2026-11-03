@@ -32,8 +32,8 @@ Frame loop: not owned in either title. Each step runs retail main (Spider-Man `0
 | `spider1::Runtime` | `titles/spiderman1/runtime.*` | `startProgram` (crt0, retail main), `StockLibgte`/`StockLibcd`/`StockDmaCallbacks` bindings, the session, overlay landings |
 | `spider1::Session`, `session(core)` | `titles/spiderman1/session.*` | Per-Core state outside guest RAM: the `StreamDriver` |
 | `spider1::FrameDriver` | `titles/spiderman1/frame_driver.*` | Retail main as host turns through an injectable `ExecuteSlice`: the boundary each turn stopped at (`ResetGraph` VSync, the retail STR player's three VSyncs, a dry `StGetNext`, a spent budget) as one field and one fence; the CdInit, DMA-timeout and VSyncCallback overrides |
-| `spider1::DebugMenu` | `titles/spiderman1/debug_menu.*` | The title debug menu (psxport `TitleDebugMenu`): `warp <level>` over the guest level table's names |
-| `spider1::LevelWarp` | `titles/spiderman1/level_warp.*` | `warp <level>`: the level script's change-level exit, raised from the gameplay loop's field wait |
+| `spider1::DebugMenu` | `titles/spiderman1/debug_menu.*` | The title debug menu (psxport `TitleDebugMenu`): the warp catalogue of the guest level table's names |
+| `spider1::LevelWarp` | `titles/spiderman1/level_warp.*` | The level arrival: the level script's change-level exit, raised from the gameplay loop's field wait |
 | `spider1::StreamDriver` | `titles/spiderman1/stream_driver.*` | The `StGetNext` override: super-call, controller pump on a dry poll, the field that poll waited through |
 | `spider1::CdInitialization` | `titles/spiderman1/cd_initialization.*` | The retail `CdInit` body: four callback slots and the CD interrupt arm |
 | `spider1::FieldClock` | `titles/spiderman1/field_clock.*` | The field count and the `VSync(0)` answer from the guest's own words |
