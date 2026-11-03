@@ -6,20 +6,29 @@
 #include "core.h"
 #include "game.h"
 
+#include <lucent/log.h>
+
+#include <vector>
+
 namespace spider::spider1 {
 
 DebugMenu::DebugMenu() {
-  using psx::game::DebugCall;
-  using psx::game::DebugParam;
-  section("Level Warp");
-  verb({
-      .name = "warp",
-      .summary = "Change to that level",
-      .params = {DebugParam::word("level", {&LevelWarp::tableCount, &LevelWarp::tableName})},
-      .run =
-          [](const DebugCall &call) {
-            call.reply = call.core.game->frameDriverAs<FrameDriver>().armWarp(
-                std::string(call.values.word(0)));
+  warp({
+      .levels = {"level"},
+      .places =
+          [](Core &core) {
+            std::vector<psx::game::WarpPlace> levels;
+            for (int row = 0; row < LevelWarp::tableCount(core); ++row) {
+              std::string name = LevelWarp::tableName(core, row);
+              levels.push_back({
+                  .name = name,
+                  .arrive =
+                      [name](Core &target) {
+                        return target.game->frameDriverAs<FrameDriver>().armWarp(name);
+                      },
+              });
+            }
+            return levels;
           },
       .refusal =
           [](Core &core) {

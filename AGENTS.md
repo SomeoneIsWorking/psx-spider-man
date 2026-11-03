@@ -37,7 +37,7 @@ retail main in `startProgram`, binds stock libgte/libcd/DMA callbacks in `regist
 with `spider1::FrameDriver::stepFrame`; Spider-Man 2's `enterelectro::FrameDriver` enters its crt0 and
 runs one budgeted guest turn and one presentation fence per step.
 
-To reach a Spider-Man 1 level, send `warp <level>` (a level table name such as `l1a2_t`) on the debug
+To reach a Spider-Man 1 level, send `warp <level>` (a level table name such as `l1a2_t`; `warp ?` lists them) on the debug
 server; `spider1::LevelWarp` raises it through the guest's own level route.
 
 ## Spider-Man first discriminator
