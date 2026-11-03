@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Spider-Man port icon</title>
+  <desc id="description">A white spider web spanning a red and blue backdrop.</desc>
+  <defs>
+    <linearGradient id="backdrop" x1="64" y1="32" x2="448" y2="480" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b3172a"/>
+      <stop offset="1" stop-color="#14205e"/>
+    </linearGradient>
+    <filter id="shadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity=".42"/>
+    </filter>
+  </defs>
+
+  <rect x="20" y="20" width="472" height="472" rx="106" fill="url(#backdrop)"/>
+  <rect x="35" y="35" width="442" height="442" rx="91" fill="none" stroke="#ffffff" stroke-width="6" opacity=".75"/>
+
+  <g filter="url(#shadow)" stroke-linejoin="round">
+    <g fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round">
+      <path d="M256 256L256 80M256 256L380 132M256 256L432 256M256 256L380 380M256 256L256 432M256 256L132 380M256 256L80 256M256 256L132 132"/>
+      <path d="M256 128l90 38 38 90-38 90-90 38-90-38-38-90 38-90Z"/>
+      <path d="M256 180l54 22 22 54-22 54-54 22-54-22-22-54 22-54Z"/>
+      <path d="M256 92l116 48 48 116-48 116-116 48-116-48-48-116 48-116Z"/>
+    </g>
+    <circle cx="256" cy="256" r="18" fill="#fff"/>
+  </g>
+</svg>
