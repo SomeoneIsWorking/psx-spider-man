@@ -12,9 +12,9 @@ namespace spider::spider1 {
 Runtime::Runtime()
     : spider::Runtime(
           psx::hle::StockVSync({.entry = vsyncAddress, .queryCounter = libetcVblankCountAddress}),
-          padBuffers),
-      libgte_(libgteEntries), libcd_(libcdEntries, libcdWorkArea, 0),
-      dmaCallbacks_(guestDmaCallbackTable) {}
+          padBuffers,
+          guestDmaCallbackTable),
+      libgte_(libgteEntries), libcd_(libcdEntries, libcdWorkArea, 0) {}
 
 void Runtime::startProgram(Core &core) {
   psx::game::Crt0Boot{crt0Image}.run(core);
@@ -25,7 +25,6 @@ void Runtime::registerOverrides(Game &game) {
   spider::Runtime::registerOverrides(game);
   libgte_.bind(game);
   libcd_.bind(game);
-  dmaCallbacks_.bind(game);
   game.frameDriverAs<FrameDriver>().installOverrides();
   session(game.core).stream.install();
 }

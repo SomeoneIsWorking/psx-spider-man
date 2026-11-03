@@ -57,7 +57,13 @@ void FrameDriver::stepFrame(Core &core, uint32_t frame) {
                   result.guestPc,
                   psx::cpu::executionExitName(result.reason));
   }
-  game_.presentation.commit(&core, 1);
+  // The replaced VSync(n), or every field edge a turn that ran out of budget crossed.
+  const std::uint32_t fields = game_.timing.takeStepFields();
+  game_.presentation.commit(&core, static_cast<int>(fields));
+  for (std::uint32_t field = 0; field < fields; ++field) {
+    game_.spu_audio.frame();
+  }
+  fields_ += fields;
   // libpad polls on every VBlank; a submitted frame also starts the next logic frame, which
   // services the pad itself.
   if (submitted_) {
@@ -73,6 +79,10 @@ uint64_t FrameDriver::presentedFrames() const {
 
 uint64_t FrameDriver::waitedFields() const {
   return waitedFields_;
+}
+
+uint64_t FrameDriver::fields() const {
+  return fields_;
 }
 
 } // namespace spider::enterelectro

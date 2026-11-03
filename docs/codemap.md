@@ -8,7 +8,7 @@ Product path: `run.sh` → the framework main (`psxport_add_product`, target `sp
 `psx::host::ProductHost` over `spider::Catalog` (in-window picker; `pick spiderman1|spiderman2`) →
 `TitleSession` → the title's `Runtime` → its `FrameDriver::stepFrame` on psxport's Lightrec executor.
 
-Frame loop: not owned in either title. Each step runs retail main (Spider-Man `0x8002C354`, Enter Electro `0x80031F54`) to a libetc VSync, one field per wait (issue 0038).
+Frame loop: not owned in either title. Each step runs retail main (Spider-Man `0x8002C354`, Enter Electro `0x80031F54`) to a libetc VSync; Spider-Man answers one field per wait, Enter Electro the fields the wait asked for or the guest clock reached (issue 0038).
 
 ## Placement rules
 
@@ -25,11 +25,11 @@ Frame loop: not owned in either title. Each step runs retail main (Spider-Man `0
 
 | Owner | Path | What it owns |
 |---|---|---|
-| `spider::Runtime` | `game/runtime/runtime.*` | The shared `GameRuntime`: `StockVSync`, `StockPadBuffers`, Record, the stock aspect policy |
+| `spider::Runtime` | `game/runtime/runtime.*` | The shared `GameRuntime`: `StockVSync`, `StockPadBuffers`, `StockDmaCallbacks` over each title's libapi table, Record, the stock aspect policy |
 | `spider::reportExecutionResult` | `game/execution/guest_execution.*` | The report of a guest turn that stopped without returning; turns run through psxport's `dispatchGuestNow`/`dispatchGuestUntilExitNow` |
 | `spider::Catalog`, `createCatalog` | `game/product/catalog.*` | Both identities and runtimes, provisioned under `scratch/assets` |
 | `spider::render::*` | `game/render/` | Render contracts not linked by the product (`spider_render_contracts` and the `mesh_*` tests): frame envelope, libgpu env records, scene ids, mesh decode |
-| `spider1::Runtime` | `titles/spiderman1/runtime.*` | `startProgram` (crt0, retail main), `StockLibgte`/`StockLibcd`/`StockDmaCallbacks` bindings, the session, overlay landings |
+| `spider1::Runtime` | `titles/spiderman1/runtime.*` | `startProgram` (crt0, retail main), `StockLibgte`/`StockLibcd` bindings, the session, overlay landings |
 | `spider1::Session`, `session(core)` | `titles/spiderman1/session.*` | Per-Core state outside guest RAM: the `StreamDriver` |
 | `spider1::FrameDriver` | `titles/spiderman1/frame_driver.*` | Retail main as host turns through an injectable `ExecuteSlice`: the boundary each turn stopped at (`ResetGraph` VSync, the retail STR player's three VSyncs, a dry `StGetNext`, a spent budget) as one field and one fence; the CdInit, DMA-timeout and VSyncCallback overrides |
 | `spider1::DebugMenu` | `titles/spiderman1/debug_menu.*` | The title debug menu (psxport `TitleDebugMenu`): the warp catalogue of the guest level table's names |
@@ -38,9 +38,10 @@ Frame loop: not owned in either title. Each step runs retail main (Spider-Man `0
 | `spider1::CdInitialization` | `titles/spiderman1/cd_initialization.*` | The retail `CdInit` body: four callback slots and the CD interrupt arm |
 | `spider1::FieldClock` | `titles/spiderman1/field_clock.*` | The field count and the `VSync(0)` answer from the guest's own words |
 | facts | `titles/spiderman1/platform_facts.h`, `guest_layout.h` | Every named `SLUS_008.75` address, word and threshold |
-| `enterelectro::Runtime` | `titles/spiderman2/runtime.*` | The `submitFrame` override, the frame driver, the run report |
-| `enterelectro::FrameDriver` | `titles/spiderman2/frame_driver.*` | Enters crt0 at the admitted entry; one budgeted turn and one fence per host step, presented if `submitFrame` ran |
-| facts | `titles/spiderman2/guest_facts.h` | `submitFrame`, VSync and its counter, pad buffers |
+| `enterelectro::Runtime` | `titles/spiderman2/runtime.*` | The `submitFrame` override, the frame driver, the overlay loader, the run report |
+| `enterelectro::OverlayLoader` | `titles/spiderman2/overlay_loader.*` | The overlay relocator `FUN_8001EEF0` override: each relocated `NAME.bin` heap block becomes one code image |
+| `enterelectro::FrameDriver` | `titles/spiderman2/frame_driver.*` | Enters crt0 at the admitted entry; one budgeted turn and one fence per host step delivering `Timing::takeStepFields` fields, each clocking the SPU, presented if `submitFrame` ran |
+| facts | `titles/spiderman2/guest_facts.h` | `submitFrame`, VSync and its counter, the libapi DMA callback table, the overlay relocator and heap block header, pad buffers |
 | tests | `tests/` | Each title's owners through the shipping sources, the catalog, mesh contracts, link isolation, the picker |
 | tools | `tools/` | Launcher, provisioning, title catalog |
 

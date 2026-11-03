@@ -2,7 +2,6 @@
 
 #include "runtime/runtime.h"
 #include "spiderman1/debug_menu.h"
-#include "stock_dma_callbacks.h"
 #include "stock_libcd.h"
 #include "stock_libgte.h"
 
@@ -32,7 +31,6 @@ private:
   // The data-ready interrupt belongs to the guest's own source-2 handler 0x8008DA24: libstr's ready
   // callback 0x800860B4 calls CdReady 0x8008CBC4, which needs the response that handler stages.
   psx::cd::StockLibcd libcd_;
-  psx::hle::StockDmaCallbacks dmaCallbacks_;
   DebugMenu debugMenu_;
 };
 

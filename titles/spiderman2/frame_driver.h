@@ -9,9 +9,9 @@ class Game;
 
 namespace spider::enterelectro {
 
-// One host step is one budgeted guest turn, one display field and one presentation fence. The turn
-// ends at a libetc VSync wait or when a field's worth of cycles is spent; it presents if the guest
-// called submitFrame inside it.
+// One host step is one budgeted guest turn and one presentation fence. The turn ends at a libetc VSync wait or
+// when a field's worth of cycles is spent; it delivers the fields the wait asked for or the guest clock reached,
+// each clocking the SPU, and presents if the guest called submitFrame inside it.
 class FrameDriver final : public psx::game::FrameDriver {
 public:
   explicit FrameDriver(Game &game);
@@ -21,6 +21,7 @@ public:
 
   [[nodiscard]] uint64_t presentedFrames() const;
   [[nodiscard]] uint64_t waitedFields() const;
+  [[nodiscard]] uint64_t fields() const;
 
 
 private:
@@ -31,6 +32,7 @@ private:
   bool submitted_ = false;
   uint64_t presentedFrames_ = 0;
   uint64_t waitedFields_ = 0;
+  uint64_t fields_ = 0;
 };
 
 } // namespace spider::enterelectro

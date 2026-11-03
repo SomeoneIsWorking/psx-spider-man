@@ -51,6 +51,7 @@ set(SPIDERMAN1_SOURCES
 
 set(SPIDERMAN2_SOURCES
   titles/spiderman2/frame_driver.cpp
+  titles/spiderman2/overlay_loader.cpp
   titles/spiderman2/runtime.cpp)
 
 # Both titles' manifest facts, as SPIDER1_TITLE_* and SPIDER2_TITLE_*; only the catalog reads them.
