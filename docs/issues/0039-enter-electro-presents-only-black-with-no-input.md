@@ -11,4 +11,8 @@ level.
 
 ## Open
 Issue 0036 records a Marvel logo once; it is not known whether this is a regression or whether the logo needs input.
+The recorded frontier names the likely owner: `docs/re-frontier.md` EE-04, the intro STR stream after the logo
+waits in `FUN_80093548` for a libstr ring slot that never fills while a CD interrupt (I_STAT&I_MASK 0x004) goes
+unclaimed. Not re-traced on HEAD in the 2026-11-03 picker pass; next step is a hang sample of the guest PC in the
+selector walk to confirm it is that wait.
 Effect on the selector: Enter Electro's panel never shows a picture or its attract demo.
