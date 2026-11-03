@@ -1,6 +1,6 @@
 # 0039 — Enter Electro presents only black when left with no input
 
-Status: fixed (2026-11-03). Owner: `titles/spiderman2/runtime.*` (`spider::enterelectro::Runtime`).
+Status: open (2026-11-03): the black intro is fixed; one attract DEMO level draws only its actors. Owner: `titles/spiderman2/` (`spider::enterelectro`).
 
 ## Observed
 Spider-Man 2 run alone, hidden, unpaced, sink 3840x2160, ires 0, fps60 1, no input, 150 s
@@ -38,5 +38,28 @@ declares heap 1 `[0x800CF0EC, 0x801FE000)` (bounds at `0x800A8B94`, set by `FUN_
 fps60 1, no input: `scratch/picker3/sm2l/sheet.png` (15 shots, 10 s apart): the Activision logo, the intro STR
 movie, the PRESS START title, the attract DEMO, the title again; 877 presented fields in 8327 steps, clean exit.
 
+## Review fixes (2026-11-03, picker3)
+- The heap-1 `guestCodeModuleWindow` took one digest at the first CD transfer into heap 1 (the STR ring at
+  `0x8015167C` lies in it) and every later overlay read hit its "already a residency" return, so the image never
+  followed an overlay load. Removed. `OverlayLoader` overrides the relocator `FUN_8001EEF0(rel, bin)` that
+  `FUN_8001E8E4` calls after reading `NAME.bin` into a heap block of `FUN_8007032C`, and on its return publishes the
+  block (`[bin, bin + header >> 4)`, header word at `bin - 4`) as one image with its SHA-256 and a new generation.
+  `scratch/picker3/sm2m/run.log`: five loads, 0x80150300..0x80165300 three times with one digest, 0x80151528 and
+  0x8017CF40 with their own.
+- The intro movie's `[xa:warn] ring overflow ... the SPU is not draining CD audio` (1 to 256 consecutive) had one
+  cause: `enterelectro::FrameDriver::stepFrame` never called `spu_audio.frame()`, so the SPU never ran and the
+  title was silent throughout while the drive kept pushing XA. Each step now delivers `Timing::takeStepFields()`
+  fields (the replaced VSync's, or the field edges a budget-ended turn crossed), commits them and clocks the SPU
+  once per field. `sm2n/run.log`: no overflow; `sm2r/cmd.log`: the movie mixes (nonzero 1460..1476 of 737 frames,
+  peak 378..5875).
+- The screens with Spider-Man alone on black (`sm2l` s04/s09/s12) are the guest's loading screen: the device's own
+  VRAM holds only that figure in both buffers (`sm2o/sheet.png` bottom right).
+- The libapi DMA callback table moved into the shared `spider::Runtime` for both titles. `scratch/picker3/pw3`
+  (picker, hidden, unpaced, sink 3840x2160): Spider-Man 1 reaches its menu and demo, Enter Electro its title, movie
+  and DEMO; nine overlay images relocated; the unfocused panel's steps never change (`run.log` `panels:`).
+
 ## Left open
-In the DEMO level only actors and the caption draw; the city geometry is black (`sm2l/sheet.png` row 3). Not traced.
+One attract DEMO level draws only its actors and the caption (`scratch/picker3/sm2q/black_demo.png`, s12..s14);
+the other DEMO levels draw their geometry (`sm2n/sheet.png`, `sm2p/sheet.png`). The device's VRAM for those frames
+also lacks the level geometry, so the guest never submits it; the present path is not at fault. Not traced
+further: next is the scene list of that level's OT against a level that draws, and the overlay at `0x8017CF40`.

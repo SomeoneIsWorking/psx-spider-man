@@ -1,6 +1,5 @@
 #pragma once
 
-#include "guest_address_range.h"
 #include "stock_pad_buffers.h"
 
 #include <cstdint>
@@ -19,10 +18,10 @@ inline constexpr std::uint32_t libetcVblankCountAddress = 0x800C082Cu;
 // callback at this base + 4*ch; FUN_8009CFF4 dispatches it.
 inline constexpr std::uint32_t guestDmaCallbackTable = 0x800C12B8u;
 
-// Heap 1 of the allocator FUN_8007032C (bounds at 0x800A8B94, set by FUN_800773E8): heap 0 is
-// [0x800CF0DC, 0x800CF0EC), heap 1 runs to the stack guard 0x801FE000. The title reads its overlays
-// into it through its own libcd (FUN_8001E8E4 enters one at 0x80150300); physical addresses.
-inline constexpr GuestAddressRange overlayHeapArena{0x000CF0ECu, 0x001FE000u};
+// The overlay loader FUN_8001E8E4 relocates NAME.bin by NAME.rel through FUN_8001EEF0(rel, bin). bin is a block of
+// the allocator FUN_8007032C, whose 8-byte header ends in its size << 4 | flags.
+inline constexpr std::uint32_t overlayRelocator = 0x8001EEF0u;
+inline constexpr std::uint32_t heapBlockHeaderBytes = 8u;
 
 // PadInitDirect 0x800960AC from FUN_80076050; FUN_80076498 copies both 0x22-byte records each
 // frame.

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "runtime/runtime.h"
-#include "stock_dma_callbacks.h"
 #include "title_debug_menu.h"
 
 namespace spider::enterelectro {
@@ -15,7 +14,6 @@ public:
   void registerOverrides(Game &game) override;
   std::unique_ptr<psx::game::FrameDriver> createFrameDriver(Game &game) override;
   void reportRun(Core &core) const override;
-  GuestAddressRange guestCodeModuleWindow() const override;
   // No debug route reaches an Enter Electro screen yet.
   const psx::game::TitleDebugMenu &debugMenu() const override {
     return debugMenu_;
@@ -23,7 +21,6 @@ public:
 
 private:
   psx::game::TitleDebugMenu debugMenu_;
-  psx::hle::StockDmaCallbacks dmaCallbacks_;
 };
 
 } // namespace spider::enterelectro

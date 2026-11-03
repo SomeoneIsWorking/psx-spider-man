@@ -2,13 +2,17 @@
 
 #include "game_runtime.h"
 #include "guest_widescreen_projection.h"
+#include "stock_dma_callbacks.h"
 #include "stock_pad_buffers.h"
 #include "stock_vsync.h"
+
+#include <cstdint>
 
 namespace spider {
 
 // What both Spider-Man titles share at the framework seam: libetc VSync as the field boundary,
-// libpad's receive buffers, and the Record picture whose 16:9 canvas carries the margins.
+// libpad's receive buffers, libapi's DMA callback table, and the Record picture whose 16:9 canvas carries the
+// margins.
 class Runtime : public psx::game::GameRuntime {
 public:
   void registerOverrides(Game &game) override;
@@ -16,11 +20,14 @@ public:
   const psx::present::GuestWidescreenProjection *guestWidescreenProjection() const override;
 
 protected:
-  Runtime(const psx::hle::StockVSync &vsync, const psx::input::StockPadBuffers::Layout &pad);
+  Runtime(const psx::hle::StockVSync &vsync,
+          const psx::input::StockPadBuffers::Layout &pad,
+          std::uint32_t dmaCallbackTable);
 
 private:
   psx::hle::StockVSync vsync_;
   psx::input::StockPadBuffers pad_;
+  psx::hle::StockDmaCallbacks dmaCallbacks_;
   psx::present::GuestWidescreenProjection aspectPolicy_;
 };
 
