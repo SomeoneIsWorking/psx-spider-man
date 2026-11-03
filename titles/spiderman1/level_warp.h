@@ -11,7 +11,7 @@ class Core;
 
 namespace spider::spider1 {
 
-// `warp <level>`: the exit the level script's change-level command (0xB5 in FUN_8005C7EC) raises,
+// A level arrival of the warp catalogue: the exit the level script's change-level command (0xB5 in FUN_8005C7EC) raises,
 // the name in 0x800A568C and selector 3 in 0x800B4F34, with the attract demo flag cleared. Applied
 // only while FUN_8002C174 waits for its field after drawing, so no frame draws with the new name.
 class LevelWarp {
