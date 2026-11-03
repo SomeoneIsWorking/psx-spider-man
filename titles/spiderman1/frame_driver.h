@@ -28,7 +28,7 @@ public:
   // Points the first turn at retail main with crt0's return address.
   void beginGuest(Core &core);
   void stepFrame(Core &core, std::uint32_t frame) override;
-  // Arms a `warp <level>` request; a later step raises it through the guest's own level route.
+  // Arms a level arrival; a later step raises it through the guest's own level route.
   std::string armWarp(std::string level);
 
 private:
