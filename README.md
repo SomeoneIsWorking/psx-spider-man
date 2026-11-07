@@ -93,3 +93,5 @@ and [`docs/issues/`](docs/issues) for open bugs and missing capabilities.
 
 The framework's vendored beetle-psx backend is GPL-2.0. Spider-Man names and assets belong to their
 respective rights holders. This project is not affiliated with or endorsed by them.
+
+Built with AI assistance (Claude and other LLMs).
