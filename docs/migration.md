@@ -32,7 +32,7 @@ behavior.
 
 The consumer boundary is the workspace's live PSXPort checkout (`external/psxport`, established by
 psxport's `tools/psxport_fetch.py`) with its required Lightrec runtime ABI at
-`b1457137c31cedff5f440d59da29401d021ba2da`. The hosted checkout and the CMake dependency refusal must
+`739bf2e3ca8ab23e219168f8e164b932798f7b1f`. The hosted checkout and the CMake dependency refusal must
 move together; a different or dirty dependency is not compatible evidence.
 
 WebAssembly is part of the migration release contract: add a browser-capable path that follows
