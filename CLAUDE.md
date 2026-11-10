@@ -1,3 +1,3 @@
-# Spider-Man agent instructions
+# CLAUDE.md
 
-Read [`AGENTS.md`](AGENTS.md). It is the sole project-local instruction authority.
+See **[AGENTS.md](AGENTS.md)**, the single guidance document for this repository.
