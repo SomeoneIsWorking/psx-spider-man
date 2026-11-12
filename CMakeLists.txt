@@ -22,8 +22,6 @@ if(NOT TARGET zstd::libzstd_shared)
 endif()
 find_package(Threads REQUIRED)
 
-add_subdirectory(${PSXPORT_DIR}/vendor/beetle-psx/deps/libchdr
-                 ${CMAKE_BINARY_DIR}/libchdr_build EXCLUDE_FROM_ALL)
 include(${PSXPORT_DIR}/cmake/psxport.cmake)
 include(cmake/title_manifest.cmake)
 
