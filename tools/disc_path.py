@@ -55,6 +55,13 @@ def _one_title_disc(values: list[tuple[str, str]]) -> str:
     return next(iter(paths), "")
 
 
+def configured_title_discs(root: Path, environ: Mapping[str, str], title_env_keys: list[str]) -> dict[str, str]:
+    """Each title-specific disc path set in the environment or .env, by key."""
+    env_file = root / ".env"
+    discs = {key: environ.get(key, "") or _env_value(env_file, key) for key in title_env_keys}
+    return {key: value for key, value in discs.items() if value}
+
+
 def resolve_unidentified_disc(
     root: Path,
     argument: str | None,

@@ -10,7 +10,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from automation.process import ToolError
-from disc_path import DiscPathError, resolve_unidentified_disc
+from disc_path import DiscPathError, configured_title_discs, resolve_unidentified_disc
 from port import launcher
 from port.launch_environment import player_environment
 from provision import ProvisionError, provision_executable
@@ -40,28 +40,34 @@ def detect_title(discdump: Path, disc: str) -> Title:
 def launch(argument: str | None, prepare_only: bool) -> None:
     launcher.preflight()
     catalog = load_catalog(ROOT)
-    try:
-        disc = resolve_unidentified_disc(ROOT, argument, os.environ,
-                                         [catalog.by_id(title_id).disc_env for title_id in catalog.ids()])
-    except DiscPathError as error:
-        raise ToolError(str(error)) from error
-    if not disc or not Path(disc).is_file():
-        raise ToolError("no disc image: pass it as ./run.sh <disc.chd>, set a title-specific disc "
-                        "environment variable, or drop one *.chd here")
-    launcher.say(f"disc: {disc}")
+    keys = [catalog.by_id(title_id).disc_env for title_id in catalog.ids()]
+    discs = list(configured_title_discs(ROOT, os.environ, keys).values()) if argument is None else []
+    if not discs:
+        try:
+            discs = [resolve_unidentified_disc(ROOT, argument, os.environ, keys)]
+        except DiscPathError as error:
+            raise ToolError(str(error)) from error
+    missing = [disc for disc in discs if not disc or not Path(disc).is_file()]
+    if missing:
+        raise ToolError(f"no disc image at {missing[0] or '(unset)'}: pass it as ./run.sh <disc.chd>, set a "
+                        "title-specific disc environment variable, or drop one *.chd here")
     discdump = launcher.build_discdump(ROOT, os.environ)
-    title = detect_title(discdump, disc)
-    launcher.say(f"title: {title.label} ({title.serial})")
-    try:
-        provision_executable(ROOT, discdump, Path(disc), title)
-    except ProvisionError as error:
-        raise ToolError(str(error)) from error
+    provisioned: dict[str, str] = {}
+    for disc in discs:
+        launcher.say(f"disc: {disc}")
+        title = detect_title(discdump, disc)
+        launcher.say(f"title: {title.label} ({title.serial})")
+        try:
+            provision_executable(ROOT, discdump, Path(disc), title)
+        except ProvisionError as error:
+            raise ToolError(str(error)) from error
+        provisioned[title.disc_env] = disc
     build = launcher.build_product(ROOT, PRODUCT_TARGET, os.environ)
     if prepare_only:
-        launcher.say(f"{title.label} is provisioned and {PRODUCT_TARGET} is built")
+        launcher.say(f"{len(provisioned)} title(s) provisioned and {PRODUCT_TARGET} is built")
         return
     env = player_environment(os.environ, product=PRODUCT_TARGET)
-    env[title.disc_env] = disc
+    env.update(provisioned)
     # No argument: the product picks among the provisioned titles in its window.
     launcher.exec_product(build / "bin" / PRODUCT_TARGET, [], env, ROOT)
 
