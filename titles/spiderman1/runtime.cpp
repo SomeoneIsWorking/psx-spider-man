@@ -27,6 +27,7 @@ void Runtime::registerOverrides(Game &game) {
   libcd_.bind(game);
   game.frameDriverAs<FrameDriver>().installOverrides();
   session(game.core).stream.install();
+  DrawReplay::registerOverrides(game.core);
 }
 
 std::unique_ptr<psx::game::TitleSessionState> Runtime::createSession(Game &game) {
@@ -35,6 +36,14 @@ std::unique_ptr<psx::game::TitleSessionState> Runtime::createSession(Game &game)
 
 std::unique_ptr<psx::game::FrameDriver> Runtime::createFrameDriver(Game &game) {
   return std::make_unique<FrameDriver>(game, FrameDriver::executeHostTurn);
+}
+
+psx::present::ReplayFrame *Runtime::replayFrame(Core &core) {
+  return &session(core).drawReplay.frame();
+}
+
+void Runtime::reportRun(Core &core) const {
+  session(core).drawReplay.poses().report();
 }
 
 void Runtime::stockCdReadLanded(Core &core, const psx::cd::StockReadLanding &landing) {

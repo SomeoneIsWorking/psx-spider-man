@@ -11,9 +11,9 @@
 #include "execution_control.h"
 #include "execution_services.h"
 #include "game.h"
+#include "guest_call.h"
 #include "host_turn.h"
 #include "logic_frame.h"
-#include "guest_call.h"
 #include "native_dispatch.h"
 
 #include <cstdlib>
@@ -34,6 +34,7 @@ void FrameDriver::installOverrides() {
   psx::cpu::installNativeOverride(
       game_.core, gpuDmaTimeoutStart, "Spider GPU DMA timeout", startGpuDmaTimeout);
   psx::cpu::installNativeOverride(game_.core, cdInitAddress, "Spider CdInit", initializeCd);
+  psx::cpu::installNativeOverride(game_.core, fieldWait, "Spider field wait", waitFields);
   game_.platform_hle.bindStock(vsyncCallbackRegistration, captureVsyncCallback);
 }
 
@@ -47,6 +48,10 @@ std::string FrameDriver::armWarp(std::string level) {
 }
 
 void FrameDriver::stepFrame(Core &core, std::uint32_t) {
+  if (heldFields_ != 0) {
+    holdField(core);
+    return;
+  }
   warp_.apply(core);
   const psx::cpu::ExecutionResult result = execute_(core, core.pc);
   // A spent cycle budget is a field of guest time: deliver it; the next turn resumes there.
@@ -62,6 +67,10 @@ void FrameDriver::stepFrame(Core &core, std::uint32_t) {
 }
 
 bool FrameDriver::serviceBoundary(Core &core, const psx::cpu::ExecutionResult &result) {
+  if (result.reason == psx::cpu::ExecutionExitReason::FrameBoundary && waitFields_ != 0) {
+    serviceFieldWait(core, result.guestPc);
+    return true;
+  }
   if (result.reason == psx::cpu::ExecutionExitReason::CooperativeYield &&
       result.guestPc == stGetNextAddress && core.pc == result.guestPc) {
     // StGetNext answered "not ready": the field that passes; VSync state is untouched.
@@ -111,7 +120,7 @@ void FrameDriver::serviceMovieVsync(Core &core) {
     std::abort();
   }
   completeVsync(core, returnValue);
-  commitField(core);
+  commitFields(core, 1u);
   ++movieFieldCount_;
   core.pc = returnPc;
   lucent::info(
@@ -124,8 +133,57 @@ void FrameDriver::deliverWaitField(Core &core, std::uint32_t continuation) {
     lucent::error("frame", "Spider-Man 1 field callback exited during a direct field wait");
     std::abort();
   }
-  commitField(core);
+  commitFields(core, 1u);
+  ++frameFields_;
   core.pc = continuation;
+}
+
+void FrameDriver::serviceFieldWait(Core &core, std::uint32_t continuation) {
+  const std::uint32_t fields = std::exchange(waitFields_, 0u);
+  frameFields_ = 0;
+  core.pc = continuation;
+  if (!frameWait_) {
+    heldFields_ = fields;
+    holdField(core);
+    return;
+  }
+  for (std::uint32_t field = 0; field < fields; ++field) {
+    deliverField(core);
+    if (core.executionControl().pending()) {
+      lucent::error("frame", "Spider-Man 1 field callback exited during a field wait");
+      std::abort();
+    }
+  }
+  commitFields(core, fields);
+}
+
+void FrameDriver::holdField(Core &core) {
+  --heldFields_;
+  deliverWaitField(core, core.pc);
+  if (heldFields_ == 0) {
+    frameFields_ = 0;
+  }
+}
+
+void FrameDriver::waitFields(Core *core) {
+  FrameDriver &driver = core->game->frameDriverAs<FrameDriver>();
+  const std::uint32_t requested = core->r[4];
+  // The idle wait runs only when no field passed during the work; the frame wait counts it.
+  if (requested == 0 || core->r[31] == gameLoopIdleWaitReturn) {
+    return;
+  }
+  const psx::frame::Timing &timing = core->game->timing;
+  driver.frameWait_ = core->r[31] == gameLoopFrameWaitReturn;
+  if (driver.frameWait_) {
+    const std::uint32_t owed = driver.frameFields_ < gameLoopFieldsPerFrame
+                                   ? gameLoopFieldsPerFrame - driver.frameFields_
+                                   : 1u;
+    driver.waitFields_ = timing.vsyncFields(owed);
+  } else {
+    // n edges from the call: the edges the clock already crossed, then n more.
+    driver.waitFields_ = timing.vsyncFields(1u) + requested - 1u;
+  }
+  psx::cpu::requestExecutionExit(*core, psx::cpu::ExecutionExitReason::FrameBoundary);
 }
 
 void FrameDriver::deliverField(Core &core) {
@@ -141,8 +199,8 @@ void FrameDriver::deliverField(Core &core) {
   core.hostTurn.onDisplayField(core);
 }
 
-void FrameDriver::commitField(Core &core) {
-  game_.presentation.commit(&core, 1);
+void FrameDriver::commitFields(Core &core, std::uint32_t fields) {
+  game_.presentation.commit(&core, static_cast<int>(fields));
   // The next logic frame starts after presenting, so its OT attributes survive the fence.
   psx::frame::LogicFrame::begin(game_, game_.timing.logicFrame + 1u);
 }

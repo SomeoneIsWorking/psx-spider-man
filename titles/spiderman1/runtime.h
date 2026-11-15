@@ -25,6 +25,12 @@ public:
   // The overlay loader streams code through the stock CdRead; each read inside its heap is an
   // image.
   void stockCdReadLanded(Core &core, const psx::cd::StockReadLanding &landing) override;
+  // The gameplay loop runs at two fields per frame (30 fps).
+  bool interpolates() const override {
+    return true;
+  }
+  psx::present::ReplayFrame *replayFrame(Core &core) override;
+  void reportRun(Core &core) const override;
 
 private:
   psx::hle::StockLibgte libgte_;

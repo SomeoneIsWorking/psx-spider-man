@@ -4,7 +4,6 @@
 
 #include "core.h"
 
-#include <algorithm>
 #include <lucent/log.h>
 #include <utility>
 
@@ -48,9 +47,7 @@ std::string LevelWarp::arm(std::string name) {
 }
 
 std::optional<std::string> LevelWarp::apply(Core &core) {
-  if (!armed_ || core.pc < kFieldWaitBegin || core.pc >= kFieldWaitEnd ||
-      std::ranges::find(kLoopFieldWaitReturns, core.r[31]) == kLoopFieldWaitReturns.end() ||
-      core.mem_r32(primaryModeState) != 0) {
+  if (!armed_ || core.pc != gameLoopFrameWaitReturn || core.mem_r32(primaryModeState) != 0) {
     return std::nullopt;
   }
   std::string name = std::move(*armed_);

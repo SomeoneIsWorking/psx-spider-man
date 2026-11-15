@@ -1,6 +1,7 @@
 #pragma once
 
 #include "game_runtime.h"
+#include "spiderman1/draw_replay.h"
 #include "spiderman1/stream_driver.h"
 
 class Core;
@@ -13,6 +14,7 @@ public:
   explicit Session(Core &core);
 
   StreamDriver stream;
+  DrawReplay drawReplay;
 };
 
 // The session of the Game `core` belongs to; aborts when it has none or another title's.

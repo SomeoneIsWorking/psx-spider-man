@@ -16,7 +16,7 @@ configs for both executables, the symbol map and the RE notes; plan 0001 moves t
 | S006 | Named scenes have complete native display-list producers | missing | no scene has a producer; see issue 0013 |
 | S007 | Animated mesh input, pose identity, and pre-GTE composition contracts | partial | `mesh_animated_vertex.*`, `mesh_pose_contract.*` decode and are unit-tested; no live corpus run has produced valid pose rows |
 | S008 | Title-correct widescreen projection from active game state | partial | Record path with the stock aspect policy; the 684x240 canvas keeps the retail centre 256. The menu is the 4:3 picture at x 86 with black margins and the attract demo and its "DEMO" caption sit at their 4:3 place, not stretched or slid. Gaps: polygons wholly inside a margin are culled by the outcode pass `FUN_8007C2AC` (issue 0034); full-screen shade quads cover only the 4:3 picture (issue 0035) |
-| S009 | True per-object interpolated 60 fps | missing | scope undecided: the guest's per-frame field count is neither statically nor dynamically established — issue 0030 |
+| S009 | True per-object interpolated 60 fps | partial | Spider-Man 1 gameplay: the owned loop runs at two fields per logic frame and the replay of `Render_walk` draws each in-between with the camera, objects and poses blended; after `warp l1a2_t` the running player's in-betweens sit between their neighbours, and a paced run shows 0.50 logic tick per 60 Hz vblank on 2033 of 4575 vblanks with 0 refused replays. Front end, movies and Enter Electro are not interpolated |
 | S010 | No whole-frame compatibility fallback on the shipping path | verified | the retired whole-guest-frame owner, its selector and its tests are absent; no tool guards against their return since `tools/source_policy.py` was deleted |
 | S011 | The product builds with Clang on Linux x86-64 | partial | `tools/port/consumer_build.py` configures and builds `spiderman_port`; no release host is qualified |
 | S012 | Input, memory card, and runtime module placement support gameplay | partial | pad receive-buffer layout proven by `spiderman1_runtime`; after `warp l1a2_t` a held Up runs Spider-Man forward on the rooftop (`scratch/restructure/smoke/sm1-warp-play/`); memory card and module placement not qualified |
@@ -37,10 +37,10 @@ Each row is a user-visible delta against the original USA PSX releases run in a 
 | delta | state | evidence / gap |
 |---|---|---|
 | Widescreen | partial | Record 684x240 canvas with the retail centre; margins hold only polygons that cross the 4:3 edge — issues 0034, 0035, 0036 |
-| 60 fps interpolation | missing | scope undecided — issue 0030 |
+| 60 fps interpolation | partial | Spider-Man 1 gameplay (S009) |
 | Loading removal | missing | — |
 | Controls | partial | forced pad input walks the front-end; deterministic replay exists but a present index is still not content-stable — issue 0009 |
-| Speed / cadence | partial | 59.71 presents/second is the host's `quota=1` pacer, not a measured retail rate; present pacer runs at 60 kHz — issue 0012 |
+| Speed / cadence | partial | Spider-Man 1 gameplay runs the retail 30 fps (`max(2, K + 1)` fields per frame, spider-man-decomp `docs/notes/frame-loop.md`); Enter Electro is not owned — issues 0012, 0038 |
 | Platforms | missing | Linux x86-64 asset-free build only; Windows, macOS x86-64/arm64 and Android arm64 have no qualified backend |
 
 ## Hosted platform coverage

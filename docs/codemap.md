@@ -9,7 +9,7 @@ Product path: `run.sh` → the framework main (`psxport_add_product`, target `sp
 `psx::host::ProductHost` over `spider::Catalog` (in-window picker; `pick spiderman1|spiderman2`) →
 `TitleSession` → the title's `Runtime` → its `FrameDriver::stepFrame` on psxport's Lightrec executor.
 
-Frame loop: not owned in either title. Each step runs retail main (Spider-Man `0x8002C354`, Enter Electro `0x80031F54`) to a libetc VSync; Spider-Man answers one field per wait, Enter Electro the fields the wait asked for or the guest clock reached (issue 0038).
+Frame loop: Spider-Man 1 owns its gameplay loop (`GameLoop_run`): the frame wait delivers the two fields a logic frame owes, or the edges the guest clock reached, as one present, and replay interpolation draws the in-between. Enter Electro is not owned: each step runs main `0x80031F54` to a libetc VSync and delivers the fields the wait asked for or the guest clock reached (issue 0038).
 
 ## Placement rules
 
@@ -32,7 +32,12 @@ Frame loop: not owned in either title. Each step runs retail main (Spider-Man `0
 | `spider::render::*` | `game/render/` | Render contracts not linked by the product (`spider_render_contracts` and the `mesh_*` tests): frame envelope, libgpu env records, scene ids, mesh decode |
 | `spider1::Runtime` | `titles/spiderman1/runtime.*` | `startProgram` (crt0, retail main), `StockLibgte`/`StockLibcd` bindings, the session, overlay landings |
 | `spider1::Session`, `session(core)` | `titles/spiderman1/session.*` | Per-Core state outside guest RAM: the `StreamDriver` |
-| `spider1::FrameDriver` | `titles/spiderman1/frame_driver.*` | Retail main as host turns through an injectable `ExecuteSlice`: the boundary each turn stopped at (`ResetGraph` VSync, the retail STR player's three VSyncs, a dry `StGetNext`, a spent budget) as one field and one fence; the CdInit, DMA-timeout and VSyncCallback overrides |
+| `spider1::FrameDriver` | `titles/spiderman1/frame_driver.*` | Retail main as host turns through an injectable `ExecuteSlice`: the `Field_wait` override (the gameplay frame wait as one present of its owed fields, any other wait one field per step), the other boundaries (`ResetGraph` VSync, the retail STR player's three VSyncs, a dry `StGetNext`, a spent budget) as one field and one fence; the CdInit, DMA-timeout and VSyncCallback overrides |
+| `spider1::DrawReplay` | `titles/spiderman1/draw_replay.*` | Replay interpolation: the `Render_walk` override that samples the motion before each real draw, the camera track, the psxport `ReplayFrame` |
+| `spider1::DrawSection` | `titles/spiderman1/draw_section.*` | The replayed section: `Render_walk` then `OT_compact` into the current draw buffer's OT, and the chain head it links |
+| `spider1::ObjectMotion` | `titles/spiderman1/object_motion.*` | The object lists' track: position, angles and a precomputed pose (flag bit 4, pointer +0x180), paired by record, model and bank |
+| `spider1::PoseBlend` | `titles/spiderman1/pose_blend.*` | The `Pose_fetch` override: records each real draw's fetched poses and blends a replay's fetch toward them |
+| pose parts | `titles/spiderman1/pose_parts.*` | An articulated pose's part count, read and part-by-part blend |
 | `spider1::DebugMenu` | `titles/spiderman1/debug_menu.*` | The title debug menu (psxport `TitleDebugMenu`): the warp catalogue of the guest level table's names |
 | `spider1::LevelWarp` | `titles/spiderman1/level_warp.*` | The level arrival: the level script's change-level exit, raised from the gameplay loop's field wait |
 | `spider1::StreamDriver` | `titles/spiderman1/stream_driver.*` | The `StGetNext` override: super-call, controller pump on a dry poll, the field that poll waited through |

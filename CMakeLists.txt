@@ -36,6 +36,11 @@ set(SPIDERMAN1_SOURCES
   titles/spiderman1/frame_driver.cpp
   titles/spiderman1/debug_menu.cpp
   titles/spiderman1/level_warp.cpp
+  titles/spiderman1/draw_section.cpp
+  titles/spiderman1/object_motion.cpp
+  titles/spiderman1/draw_replay.cpp
+  titles/spiderman1/pose_blend.cpp
+  titles/spiderman1/pose_parts.cpp
   titles/spiderman1/stream_driver.cpp
   titles/spiderman1/cd_initialization.cpp
   titles/spiderman1/field_clock.cpp)
