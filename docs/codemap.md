@@ -1,8 +1,9 @@
 # Codemap
 
 Where code lives in the Spider-Man port. Capability state is in `docs/project-state.md`, feature hops in
-`docs/features.md`, the evidence chain in `docs/re-frontier.md`, atomic work in `docs/issues/`. A title's
-identity is in `titles/<title>/title.json`; its measured addresses are in its facts headers.
+`docs/features.md`, the evidence chain in the decomp (`external/spider-man-decomp/docs/re-frontier.md`), atomic work in
+`docs/issues/`. A title's identity is in `titles/<title>/title.json`; its named addresses are in the decomp's
+symbol map (`external/spider-man-decomp/config/symbols/`) and, until plan 0001 lands, its facts headers.
 
 Product path: `run.sh` → the framework main (`psxport_add_product`, target `spiderman_port`) →
 `psx::host::ProductHost` over `spider::Catalog` (in-window picker; `pick spiderman1|spiderman2`) →

@@ -1,0 +1,3 @@
+[submodule "external/spider-man-decomp"]
+	path = external/spider-man-decomp
+	url = https://github.com/SomeoneIsWorking/spider-man-decomp.git

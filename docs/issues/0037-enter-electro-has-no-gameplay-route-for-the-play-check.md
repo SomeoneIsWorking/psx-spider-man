@@ -15,7 +15,7 @@ Reproduce: `scratch/play-check/play.py spiderman2 build/play-check/bin/spiderman
 The log reports `pending I_STAT&I_MASK=0x004; no SysEnq element claimed it`.
 
 Cause: the intro STR player `FUN_8003035C` waits forever for its first frame from the libstr ring at
-`0x800CE44C`, and no CD stream feeds that ring (EE-04 in `docs/re-frontier.md`). Every later screen depends on it,
+`0x800CE44C`, and no CD stream feeds that ring (EE-04 in `external/spider-man-decomp/docs/re-frontier.md`). Every later screen depends on it,
 so a `warp` has no level loader to reach.
 
 Gap: a warp in the Tomba 2 pattern needs EE-04 first: the CdInit callback install and the stream read, as

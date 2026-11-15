@@ -33,7 +33,7 @@ dispatch, invalidation, oracle comparison and bounded-fallback evidence are stil
 ## Enter Electro
 
 Enter Electro (`SLUS_013.78`) stays behind Spider-Man. Preserve its measured identity, entry and
-present point (`docs/re-frontier.md` EE-00..EE-04); do not infer any Spider-Man address or behavior
+present point (`external/spider-man-decomp/docs/re-frontier.md` EE-00..EE-04); do not infer any Spider-Man address or behavior
 from lineage similarity.
 
 ## Rendering

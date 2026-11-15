@@ -2,7 +2,9 @@
 
 `partial` = some subset demonstrated; `missing` = nothing product-facing exists; `blocked` = the
 predecessor is missing; `verified` = the observable condition holds. Which reverse-engineering steps
-are ground-truth-ready and which are not lives in `docs/re-frontier.md`.
+are ground-truth-ready and which are not lives in the decomp, `external/spider-man-decomp/docs/re-frontier.md`.
+The decomp is [spider-man-decomp](https://github.com/SomeoneIsWorking/spider-man-decomp) (ours, MIT): splat
+configs for both executables, the symbol map and the RE notes; plan 0001 moves the port's addresses onto it.
 
 | id | capability | state | evidence / gap |
 |---|---|---|---|

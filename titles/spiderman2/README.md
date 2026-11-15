@@ -16,5 +16,5 @@ presentation fence for one display field. The field presents if the guest called
 `submitFrame 0x8006BE98` inside the turn, otherwise it rescans the last frame; the guest's own
 VBlank-counter wait sets the frame rate. The
 Marvel logo presents; the intro STR stream then waits forever for its first sector (`EE-04` in
-`docs/re-frontier.md`). No gameplay, native producer, widescreen culling or runtime-module support is claimed.
+`external/spider-man-decomp/docs/re-frontier.md`). No gameplay, native producer, widescreen culling or runtime-module support is claimed.
 Enter Electro follows only after Spider-Man passes its representative-gameplay migration gate.
