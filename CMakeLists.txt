@@ -29,7 +29,6 @@ include(cmake/title_manifest.cmake)
 function(spider_configure_runtime_target TARGET)
   target_include_directories(${TARGET} PRIVATE game titles)
   target_link_libraries(${TARGET} PRIVATE psxport)
-  set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endfunction()
 
 add_library(spider_shared STATIC
