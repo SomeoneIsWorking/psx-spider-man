@@ -4,7 +4,7 @@ title: Spider-Man 1's per-frame field count is not statically known, and the one
 symptom: the interpolated-60fps scope question for this title needs the guest's own per-frame field count, and neither a static reading of the image nor a run of the current product produces it
 tags: cadence,frame-rate,vsync,native-owner,dead-tap
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-11-15
 ---
 
 ## Status: open, and the scope of S009 is therefore undecided
@@ -50,3 +50,10 @@ If, once `0x8002C174` runs, the counter advances by exactly 1 per game frame whi
 second is ~30, then the inner `DrawSync(1)` loop never iterates twice in practice, the rate IS one
 field per frame, and Spider-Man 1 needs **no** interpolation at all. That is the most likely way
 this issue is wrong.
+
+## Player report (2026-11-15)
+The user reports the game has no frame limit but is designed for 30 fps, so physics may break when it
+runs faster. Check whether the update scales by the field delta it reads from `0x800B5468` (variable
+timestep) or assumes a fixed step. Either way the owned frame driver (issue 38) runs it at 2 fields
+per logic frame and replay interpolation presents the in-betweens. A run at 1 field per frame is
+not the way to get 60 fps.
