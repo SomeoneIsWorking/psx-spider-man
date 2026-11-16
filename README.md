@@ -1,8 +1,8 @@
 # Spider-Man PSX — both Neversoft games
 
 A work-in-progress native PC port of *Spider-Man* and *Spider-Man 2: Enter Electro*. The target
-architecture combines title-owned native subsystems with psxport's runtime Lightrec executor for all
-remaining MIPS instructions read from the player's authenticated game files.
+architecture combines title-owned native subsystems with psxport's per-`Core` interpreter
+(`GuestExecutor`) for all remaining MIPS instructions read from the player's authenticated game files.
 
 No disc image, executable, or game asset is included. Supply a legally obtained USA disc image.
 
@@ -10,7 +10,7 @@ No disc image, executable, or game asset is included. Supply a legally obtained 
 
 | Title | Executable identity | Current evidence |
 | --- | --- | --- |
-| Spider-Man | `SLUS_008.75` | The current Lightrec product has resumed and presented the first authenticated STR movie field. Both complete intro movies, `dem1`, and interactive gameplay remain unverified in this product; see the [current-state ledger](docs/project-state.md). |
+| Spider-Man | `SLUS_008.75` | The product, on the recompiler before the interpreter replaced it, resumed and presented the first authenticated STR movie field. Both complete intro movies, `dem1`, and interactive gameplay remain unverified in this product; see the [current-state ledger](docs/project-state.md). |
 | Spider-Man 2: Enter Electro | `SLUS_013.78` | Boots from the retail crt0 under its frame driver and presents the Marvel logo; the intro STR stream then never fills (`EE-04` in [the RE frontier](external/spider-man-decomp/docs/re-frontier.md)). Gameplay is unreached. |
 
 The serial, PS-X EXE header, size, and SHA-256 jointly select a title. Names are labels, never
@@ -24,14 +24,13 @@ dispatcher/tests, and old build/provisioning path are absent. The only product t
 authenticated executable and enters psxport's runtime guest-execution boundary.
 
 The first implementation discriminator is deliberately narrow: execute the authenticated Spider-Man
-image through Lightrec, preserve the current native owners, reach `dem1`, and replace the generated
+image on the interpreter, preserve the current native owners, reach `dem1`, and replace the generated
 movie-fiber derivative with resumable runtime guest execution at the three binary-proven STR field
 boundaries. This demonstrates that real title code is running dynamically.
 
 A bounded representative interactive gameplay milestone must also prove:
 
-- nonzero Lightrec blocks, no interpreter gameplay selector, and bounded reason-coded fallback below
-  its declared threshold;
+- nonzero executed guest blocks in the executor ledger and no engine selector;
 - a native override and an override-bypassing original guest call through the shipping dispatcher;
 - positive and controlled-negative invalidation for executable module changes;
 - timing, memory, interrupts, and relevant device state against an independent oracle; and
@@ -40,19 +39,17 @@ A bounded representative interactive gameplay milestone must also prove:
 The removed pipeline cannot return as a compatibility mode while this work is incomplete.
 
 `external/psxport` is the workspace's LIVE PSXPort checkout (psxport's `tools/psxport_fetch.py`, run from psxport `main`
-by `run.sh` and CI, links it, or clones psxport `main` where there is none); there is no consumer pin to keep in step. PSXPort's own
-dependency declaration still pins Lightrec, and CMake refuses a dirty or mismatched Lightrec checkout.
+by `run.sh` and CI, links it, or clones psxport `main` where there is none); there is no consumer pin to keep in step.
 
 ## Intended player experience
 
 `./run.sh` enters the frozen `uv` environment, selects and authenticates the disc, provisions only
-the PS-X EXE, builds the native/Lightrec product without offline guest translation, and launches the
-selected title. For Spider-Man 1 that is the provisioned executable, booted directly because the catalog has one title; `spiderman_port <executable>` runs another serial-identified executable. The maintained Lightrec backend is linked. A real authenticated run has presented
-the first movie field; complete movies, `dem1`, and gameplay remain unverified against the declared
-translation and fallback gates.
+the PS-X EXE, builds the native/interpreter product without offline guest-code emission, and launches the
+selected title. For Spider-Man 1 that is the provisioned executable, booted directly because the catalog has one title; `spiderman_port <executable>` runs another serial-identified executable. A real authenticated run presented the first movie field on the
+recompiler; complete movies, `dem1`, and gameplay remain unverified on the interpreter.
 
 Hosted CI is configured to build the real asset-free Linux x86-64 product. Windows, macOS, Apple Silicon, and Android jobs
-remain absent because their PSXPort/Lightrec product backends are not implemented or qualified;
+remain absent because those hosts are not yet qualified;
 policy-only jobs do not stand in for those missing platform boundaries.
 There are no unit tests or gates. The local and hosted build is `CC=clang CXX=clang++ uv run --frozen
 python external/psxport/tools/port/consumer_build.py --build build/agent --target spiderman_port`.
@@ -68,14 +65,14 @@ are never player prerequisites.
 authenticated executable/module bytes
               |
               v
-    psxport per-Core Lightrec executor
-      | runtime cache | invalidation |
+   psxport per-Core interpreter (GuestExecutor)
+      | guest memory  | invalidation |
       +---------------+--------------+
                       |
        image-aware title dispatch
           |                    |
     native override      original guest body
-                          through Lightrec
+                          on the interpreter
 ```
 
 `game/` holds address-free lineage mechanism and cohesive Spider-Man native owners.

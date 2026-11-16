@@ -1,7 +1,7 @@
 # Spider-Man port
 
-Both Neversoft PSX Spider-Man games as native PC products; remaining guest instructions run through
-psxport's Lightrec integration. Execution policy: the `dynarec-port`, `dynarec-runtime` and
+Both Neversoft PSX Spider-Man games as native PC products; remaining guest instructions run on
+psxport's per-`Core` interpreter (`GuestExecutor`). Execution policy: the `dynarec-port`, `dynarec-runtime` and
 `dynarec-overrides` skills. Also read [`../AGENTS.md`](../AGENTS.md) and
 [`external/psxport/AGENTS.md`](external/psxport/AGENTS.md). The product-execution plan is
 [`docs/migration.md`](docs/migration.md).
@@ -23,12 +23,12 @@ lists them) on the debug server; `spider1::LevelWarp` raises it through the gues
 
 ## Spider-Man first discriminator
 
-The first migration checkpoint is the recorded `dem1` route, reached through Lightrec with nonzero
-translated blocks and the existing native owners active. The build-derived `FUN_8002AA0C`
-movie-fiber body is replaced by resumable runtime guest execution: the title field owner suspends and
-resumes at the three authenticated STR VSync return PCs without rewriting the guest body. This
-checkpoint proves wiring only; representative interactive gameplay, native and original-call
-dispatch, invalidation, oracle comparison and bounded-fallback evidence are still required.
+The first migration checkpoint is the recorded `dem1` route, reached on the interpreter with nonzero
+executed guest blocks in the executor ledger and the existing native owners active. The build-derived
+`FUN_8002AA0C` movie-fiber body is replaced by resumable runtime guest execution: the title field owner
+suspends and resumes at the three authenticated STR VSync return PCs without rewriting the guest body.
+This checkpoint proves wiring only; representative interactive gameplay, native and original-call
+dispatch, invalidation and oracle comparison evidence are still required.
 
 ## Enter Electro
 
