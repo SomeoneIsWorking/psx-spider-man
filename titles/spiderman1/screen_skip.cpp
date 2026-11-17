@@ -12,7 +12,8 @@ bool ScreenSkip::startPressed(Core &core) {
   const auto held = static_cast<std::uint16_t>(~core.game->pad.buttons & psx::input::kButtonStart);
   const bool pressed = (held & ~heldBefore_) != 0u;
   heldBefore_ = held;
-  return pressed;
+  // A selector preview skips what the player does not control, as a press would.
+  return pressed || core.game->session.preview();
 }
 
 void ScreenSkip::movieField(Core &core) {
