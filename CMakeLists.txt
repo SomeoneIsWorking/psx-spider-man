@@ -36,6 +36,8 @@ set(SPIDERMAN1_SOURCES
   titles/spiderman1/frame_driver.cpp
   titles/spiderman1/debug_menu.cpp
   titles/spiderman1/level_warp.cpp
+  titles/spiderman1/load_floor.cpp
+  titles/spiderman1/screen_skip.cpp
   titles/spiderman1/draw_section.cpp
   titles/spiderman1/object_motion.cpp
   titles/spiderman1/draw_replay.cpp

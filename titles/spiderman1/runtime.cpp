@@ -4,6 +4,7 @@
 #include "game.h"
 #include "guest_code_module.h"
 #include "spiderman1/frame_driver.h"
+#include "spiderman1/load_floor.h"
 #include "spiderman1/platform_facts.h"
 #include "spiderman1/session.h"
 
@@ -27,6 +28,7 @@ void Runtime::registerOverrides(Game &game) {
   libcd_.bind(game);
   game.frameDriverAs<FrameDriver>().installOverrides();
   session(game.core).stream.install();
+  LoadFloor::install(game.core);
   DrawReplay::registerOverrides(game.core);
 }
 

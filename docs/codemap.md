@@ -42,6 +42,8 @@ Frame loop: Spider-Man 1 owns its gameplay loop (`GameLoop_run`): the frame wait
 | `spider1::LevelWarp` | `titles/spiderman1/level_warp.*` | The level arrival: the level script's change-level exit, raised from the gameplay loop's field wait |
 | `spider1::StreamDriver` | `titles/spiderman1/stream_driver.*` | The `StGetNext` override: super-call, controller pump on a dry poll, the field that poll waited through |
 | `spider1::CdInitialization` | `titles/spiderman1/cd_initialization.*` | The retail `CdInit` body: four callback slots and the CD interrupt arm |
+| `spider1::LoadFloor` | `titles/spiderman1/load_floor.*` | The boot load floor: `Boot_init`'s 300-field `Pad_read` poll, one unpresented field per poll |
+| `spider1::ScreenSkip` | `titles/spiderman1/screen_skip.*` | Start on a screen the player does not control: a movie ends through `Movie_play`'s last-frame flag |
 | `spider1::FieldClock` | `titles/spiderman1/field_clock.*` | The field count and the `VSync(0)` answer from the guest's own words |
 | facts | `titles/spiderman1/platform_facts.h`, `guest_layout.h` | Every named `SLUS_008.75` address, word and threshold |
 | `enterelectro::Runtime` | `titles/spiderman2/runtime.*` | The `submitFrame` override, the frame driver, the overlay loader, the run report |

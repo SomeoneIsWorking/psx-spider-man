@@ -3,6 +3,7 @@
 #include "spiderman1/cd_initialization.h"
 #include "spiderman1/field_clock.h"
 #include "spiderman1/guest_layout.h"
+#include "spiderman1/load_floor.h"
 #include "spiderman1/platform_facts.h"
 #include "spiderman1/stream_driver.h"
 
@@ -80,6 +81,11 @@ bool FrameDriver::serviceBoundary(Core &core, const psx::cpu::ExecutionResult &r
     deliverWaitField(core, core.r[31]);
     return true;
   }
+  if (result.reason == psx::cpu::ExecutionExitReason::CooperativeYield &&
+      LoadFloor::polled(core, result.guestPc)) {
+    deliverLoadField(core, core.r[31]);
+    return true;
+  }
   if (result.reason != psx::cpu::ExecutionExitReason::FrameBoundary || core.r[4] != 0) {
     return false;
   }
@@ -121,6 +127,7 @@ void FrameDriver::serviceMovieVsync(Core &core) {
   }
   completeVsync(core, returnValue);
   commitFields(core, 1u);
+  skip_.movieField(core);
   ++movieFieldCount_;
   core.pc = returnPc;
   lucent::info(
@@ -135,6 +142,17 @@ void FrameDriver::deliverWaitField(Core &core, std::uint32_t continuation) {
   }
   commitFields(core, 1u);
   ++frameFields_;
+  core.pc = continuation;
+}
+
+void FrameDriver::deliverLoadField(Core &core, std::uint32_t continuation) {
+  deliverField(core);
+  if (core.executionControl().pending()) {
+    lucent::error("frame", "Spider-Man 1 field callback exited during a load floor field");
+    std::abort();
+  }
+  game_.presentation.commitUnpresented();
+  psx::frame::LogicFrame::begin(game_, game_.timing.logicFrame + 1u);
   core.pc = continuation;
 }
 

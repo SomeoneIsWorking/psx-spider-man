@@ -3,6 +3,7 @@
 #include "execution_exit.h"
 #include "game_runtime.h"
 #include "spiderman1/level_warp.h"
+#include "spiderman1/screen_skip.h"
 
 #include <cstdint>
 #include <functional>
@@ -42,6 +43,8 @@ private:
   void serviceFieldWait(Core &core, std::uint32_t continuation);
   // One field for a wait the guest cannot yield itself: StGetNext not ready or a spent turn budget.
   void deliverWaitField(Core &core, std::uint32_t continuation);
+  // One field of a load floor: delivered and fenced, never presented.
+  void deliverLoadField(Core &core, std::uint32_t continuation);
   void deliverField(Core &core);
   void commitFields(Core &core, std::uint32_t fields);
   void completeVsync(Core &core, std::uint32_t returnValue);
@@ -55,6 +58,7 @@ private:
   Game &game_;
   ExecuteSlice execute_;
   LevelWarp warp_;
+  ScreenSkip skip_;
   std::uint32_t vsyncCallback_ = 0;
   std::uint32_t movieFieldCount_ = 0;
   // Fields the pending native field wait delivers; 0 while none is pending.
