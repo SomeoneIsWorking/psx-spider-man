@@ -38,6 +38,10 @@ set(SPIDERMAN1_SOURCES
   titles/spiderman1/level_warp.cpp
   titles/spiderman1/load_floor.cpp
   titles/spiderman1/screen_skip.cpp
+  titles/spiderman1/screen_window.cpp
+  titles/spiderman1/face_writer.cpp
+  titles/spiderman1/screen_cull.cpp
+  titles/spiderman1/view_publish.cpp
   titles/spiderman1/draw_section.cpp
   titles/spiderman1/object_motion.cpp
   titles/spiderman1/draw_replay.cpp

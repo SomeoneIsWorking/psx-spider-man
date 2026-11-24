@@ -3,10 +3,13 @@
 #include "crt0_boot.h"
 #include "game.h"
 #include "guest_code_module.h"
+#include "spiderman1/face_writer.h"
 #include "spiderman1/frame_driver.h"
 #include "spiderman1/load_floor.h"
 #include "spiderman1/platform_facts.h"
+#include "spiderman1/screen_cull.h"
 #include "spiderman1/session.h"
+#include "spiderman1/view_publish.h"
 
 namespace spider::spider1 {
 
@@ -29,6 +32,9 @@ void Runtime::registerOverrides(Game &game) {
   game.frameDriverAs<FrameDriver>().installOverrides();
   session(game.core).stream.install();
   LoadFloor::install(game.core);
+  ViewPublish::install(game.core);
+  ScreenCull::install(game.core);
+  FaceWriter::install(game.core);
   DrawReplay::registerOverrides(game.core);
 }
 

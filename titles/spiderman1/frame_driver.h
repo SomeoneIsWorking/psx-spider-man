@@ -68,6 +68,8 @@ private:
   bool frameWait_ = false;
   // Fields such a wait still holds, one per step.
   std::uint32_t heldFields_ = 0;
+  // Start ended the held wait: its remaining fields pass unpresented.
+  bool skippingHold_ = false;
   // Fields delivered since the last field wait returned: the gameplay frame's work so far.
   std::uint32_t frameFields_ = 0;
 };

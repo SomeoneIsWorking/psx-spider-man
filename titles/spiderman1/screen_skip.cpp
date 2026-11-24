@@ -23,4 +23,22 @@ void ScreenSkip::movieField(Core &core) {
   lucent::info("skip", "Spider-Man 1 movie ends at its last-frame terminal");
 }
 
+bool ScreenSkip::isLegalWait(Core &core, std::uint32_t returnPc) {
+  for (std::uint32_t entry = core.mem_r32(overlayList); entry != 0u;
+       entry = core.mem_r32(entry + overlayNext)) {
+    if (core.mem_r32(entry + overlayHash) == shellHash) {
+      return returnPc == core.mem_r32(entry + overlayBase) + legalWaitReturn;
+    }
+  }
+  return false;
+}
+
+bool ScreenSkip::endsHeldWait(Core &core, std::uint32_t returnPc) {
+  if (!startPressed(core) || !isLegalWait(core, returnPc)) {
+    return false;
+  }
+  lucent::info("skip", "Spider-Man 1 legal screen ends at its wait's own field count");
+  return true;
+}
+
 } // namespace spider::spider1

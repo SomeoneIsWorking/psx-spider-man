@@ -177,9 +177,16 @@ void FrameDriver::serviceFieldWait(Core &core, std::uint32_t continuation) {
 
 void FrameDriver::holdField(Core &core) {
   --heldFields_;
-  deliverWaitField(core, core.pc);
+  // A skipped wait still passes every field it counts, unpresented.
+  skippingHold_ = skippingHold_ || skip_.endsHeldWait(core, core.pc);
+  if (skippingHold_) {
+    deliverLoadField(core, core.pc);
+  } else {
+    deliverWaitField(core, core.pc);
+  }
   if (heldFields_ == 0) {
     frameFields_ = 0;
+    skippingHold_ = false;
   }
 }
 
